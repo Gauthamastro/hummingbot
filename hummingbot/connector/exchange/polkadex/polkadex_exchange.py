@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 from bidict import bidict
 from dateutil import parser
 from gql import Client
-from gql.transport.appsync_auth import AppSyncApiKeyAuthentication
+from gql.transport.appsync_auth import AppSyncApiKeyAuthentication, AppSyncJWTAuthentication
 from gql.transport.appsync_websockets import AppSyncWebsocketsTransport
 from gql.transport.exceptions import TransportQueryError
 from hummingbot.connector.trading_rule import TradingRule
@@ -69,7 +69,7 @@ class PolkadexExchange(ExchangePyBase):
         self.api_key = CONSTANTS.GRAPHQL_API_KEY
         # Extract host from url
         host = str(urlparse(self.endpoint).netloc)
-        self.auth = AppSyncApiKeyAuthentication(host=host, api_key=self.api_key)
+        
         self._trading_pairs = trading_pairs
         self.is_trading_required_flag = trading_required
         if self.is_trading_required_flag:
@@ -78,6 +78,9 @@ class PolkadexExchange(ExchangePyBase):
                                                            KeypairType.SR25519)
             self.user_proxy_address = self.proxy_pair.ss58_address
             print("trading account: ", self.user_proxy_address)
+        
+        self.auth = AppSyncJWTAuthentication(host,self.user_proxy_address)
+        # self.auth = AppSyncApiKeyAuthentication(host=host, api_key=self.api_key)
         self.user_main_address = None
         self.nonce = 0  # TODO: We need to fetch the nonce from enclave
         self.event_id = 0  # Tracks the event_id from websocket messages
