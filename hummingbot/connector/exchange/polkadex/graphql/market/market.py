@@ -61,13 +61,17 @@ async def get_all_markets(endpoint, api_key):
     print("inside get_all_markets")
     query = gql(
         """
-query getAllMarketTickers {
- getAllMarkets {
+query MyQuery {
+  getAllMarkets {
     items {
       market
-      max_trade_amount
-      min_qty
-      min_trade_amount
+      max_order_qty
+      max_price
+      min_order_qty
+      min_price
+      price_tick_size
+      qty_step_size
+      quote_asset_precision
     }
   }
 }

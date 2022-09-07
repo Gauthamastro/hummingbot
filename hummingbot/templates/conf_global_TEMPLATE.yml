@@ -128,6 +128,8 @@ probit_secret_key: null
 probit_kr_api_key: null
 probit_kr_secret_key: null
 
+polkadex_seed_phrase: null
+
 ndax_uid: null
 ndax_account_name: null
 ndax_api_key: null

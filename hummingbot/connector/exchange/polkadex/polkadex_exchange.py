@@ -562,7 +562,7 @@ class PolkadexExchange(ExchangePyBase):
         print("Checking balances for: ", self.user_main_address)
         balances = await get_all_balances_by_main_account(self.user_main_address, self.endpoint, self.api_key)
         print("Updating balances: {:?}", balances)
-        self.logger().info(" ---- Balance Update: {:?} -----",balances);
+        # self.logger().info(" ---- Balance Update: {:?} -----",balances);
 
         """
       [

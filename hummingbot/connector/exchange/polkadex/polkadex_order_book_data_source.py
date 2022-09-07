@@ -74,8 +74,10 @@ class PolkadexOrderbookDataSource(OrderBookTrackerDataSource):
         print("Recent trade: ", message)
         #test it with the right message
         new_message = {}
+        new_message["data"] = []
+
         message = message["data"]["websocket_streams"]["data"]
-        message = message.literal_eval(message)
+        # message = message.literal_eval(message)
         print("new generated message: ",message)
         for change in message:
             if change["side"] == "Ask":
@@ -84,7 +86,8 @@ class PolkadexOrderbookDataSource(OrderBookTrackerDataSource):
             else:
                 change["price"] = p_utils.parse_price_or_qty(change["price"])
                 change["qty"] = p_utils.parse_price_or_qty(change["qty"])
-            new_message["data"] += change
+            
+            new_message["data"].append(change)
 
         new_message["market"] = trading_pair
         print("new msg on trade: ", new_message)
@@ -95,9 +98,11 @@ class PolkadexOrderbookDataSource(OrderBookTrackerDataSource):
         #test it with the right message
         new_message = {}
         message = message["websocket_streams"]["data"]
-        message = message.literal_eval(message)
+        new_message["data"] = []
+        # message = message.literal_eval(message)
         print("new generated message: ",message)
         for change in message:
+            print(change)
             if change["side"] == "Ask":
                 change["price"] = p_utils.parse_price_or_qty(change["price"])
                 change["qty"] = p_utils.parse_price_or_qty(change["qty"])
@@ -106,7 +111,8 @@ class PolkadexOrderbookDataSource(OrderBookTrackerDataSource):
                 change["price"] = p_utils.parse_price_or_qty(change["price"])
                 change["qty"] = p_utils.parse_price_or_qty(change["qty"])
                 change["seq"]  = p_utils.parse_price_or_qty(change["seq"])
-            new_message["data"] += change
+            
+            new_message["data"].append(change)
             
         new_message["market"] = trading_pair
         print("new msg on ob_inc: ", new_message)

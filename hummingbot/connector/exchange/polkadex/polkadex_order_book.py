@@ -97,10 +97,10 @@ class PolkadexOrderbook(OrderBook):
         for change in msg:
             print("Change: ", change)
             if change["side"] == "Ask":
-                asks.append(p_utils.parse_price_or_qty(change["price"]), p_utils.parse_price_or_qty(change["qty"]), float(change["seq"]))
+                asks.append((p_utils.parse_price_or_qty(change["price"]), p_utils.parse_price_or_qty(change["qty"]), float(change["seq"])))
                 seq = float(change["seq"])
             else:
-                bids.append(p_utils.parse_price_or_qty(change["price"]), p_utils.parse_price_or_qty(change["qty"]), float(change["seq"]))
+                bids.append((p_utils.parse_price_or_qty(change["price"]), p_utils.parse_price_or_qty(change["qty"]), float(change["seq"])))
                 seq = float(change["seq"])
         print("(diff_message_from_exchange)bids: ",bids,"\n(diff_message_from_exchange)asks: ",asks)
         # timestamp = time.time()
@@ -151,7 +151,7 @@ class PolkadexOrderbook(OrderBook):
         {"side":"Ask","price":5554500000000,"qty":7999200000000,HBOTBPX221825c769eb1f581587e1bb1v ,"seq":20}
         """
         print("Public trade message: ", msg)
-        msg = msg["websocket_streams"]["data"]
+        # msg = msg["websocket_streams"]["data"]
         if metadata:
             msg.update(metadata)
         print("Public trade message: ", msg)
