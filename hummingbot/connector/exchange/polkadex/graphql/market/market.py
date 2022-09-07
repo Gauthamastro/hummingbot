@@ -76,7 +76,6 @@ query MyQuery {
   }
 }
 """)
-
     variables = {}
 
     result = await execute_query_command(query, variables, endpoint, proxy_addr)

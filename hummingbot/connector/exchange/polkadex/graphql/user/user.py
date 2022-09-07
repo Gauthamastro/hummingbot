@@ -96,6 +96,7 @@ query findOrderByMainAccount($main: String!, $market: String!, $order_id: String
     return result["findOrderByMainAccount"]
 
 async def get_main_acc_from_proxy_acc(proxy, endpoint, proxy_addr):
+    print("inside get_main_acc_from_proxy_acc query")
     query = gql(
         """
 query findUserByProxyAccount($proxy_account: String!) {

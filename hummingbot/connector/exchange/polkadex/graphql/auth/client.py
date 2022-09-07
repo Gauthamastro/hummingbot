@@ -5,6 +5,7 @@ from gql.transport.aiohttp import AIOHTTPTransport
 from gql.transport.appsync_auth import AppSyncApiKeyAuthentication, AppSyncJWTAuthentication
 from gql import Client
 from gql.transport.appsync_websockets import AppSyncWebsocketsTransport
+from hummingbot.connector.exchange.polkadex import polkadex_constants as CONSTANTS
 
 
 def get_env_vars():
@@ -22,13 +23,19 @@ def get_env_vars():
 # Doesn't take subscription commands
 async def execute_query_command(query, variable_values, url,proxy_addr):
     # Extract host from url
-    host = str(urlparse(url).netloc)
-
-    auth =  AppSyncJWTAuthentication(url, proxy_addr)
+    host = str(urlparse(CONSTANTS.GRAPHQL_ENDPOINT).netloc)
+    url = CONSTANTS.GRAPHQL_ENDPOINT
+    print("host: ",host)
+    print("url: ",url)
+    # host = url
+    print("proxy_address: ",proxy_addr)
+    auth =  AppSyncJWTAuthentication(host, proxy_addr)
+    print("auth: ",auth)
 
     transport = AIOHTTPTransport(url=url, auth=auth)
-
+    print("transport: ",transport)
     async with Client(transport=transport, fetch_schema_from_transport=False) as session:
+        print("Inside session")
         return await session.execute(query, variable_values=variable_values, parse_result=True)
 
 

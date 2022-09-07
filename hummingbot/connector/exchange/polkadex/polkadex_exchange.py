@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 from bidict import bidict
 from dateutil import parser
 from gql import Client
-from gql.transport.appsync_auth import AppSyncApiKeyAuthentication, AppSyncJWTAuthentication
+from    gql.transport.appsync_auth import AppSyncApiKeyAuthentication, AppSyncJWTAuthentication
 from gql.transport.appsync_websockets import AppSyncWebsocketsTransport
 from gql.transport.exceptions import TransportQueryError
 from hummingbot.connector.trading_rule import TradingRule
@@ -79,8 +79,9 @@ class PolkadexExchange(ExchangePyBase):
                                                            KeypairType.SR25519)
             self.user_proxy_address = self.proxy_pair.ss58_address
             print("trading account: ", self.user_proxy_address)
+            self.auth = AppSyncJWTAuthentication(host,self.user_proxy_address)
+            print("auth: ",self.auth)
         
-        self.auth = AppSyncJWTAuthentication(host,self.user_proxy_address)
         # self.auth = AppSyncApiKeyAuthentication(host=host, api_key=self.api_key)
         self.user_main_address = None
         self.nonce = 0  # TODO: We need to fetch the nonce from enclave
@@ -99,7 +100,7 @@ class PolkadexExchange(ExchangePyBase):
                         ["pair", "TradingPair"],
                         ["side", "OrderSide"],
                         ["order_type", "OrderType"],
-                        ["quote_order_quantity","String"]
+                        ["quote_order_quantity", "String"],
                         ["qty", "String"],
                         ["price", "String"],
                         ["timestamp", "i64"],
@@ -163,7 +164,7 @@ class PolkadexExchange(ExchangePyBase):
         }
         print("Connecting to blockchain")
         self.blockchain = SubstrateInterface(
-            url="ws://127.0.0.1:9944",
+            url="wss://blockchain.polkadex.trade",
             ss58_format=POLKADEX_SS58_PREFIX,
             type_registry=custom_types
         )
@@ -642,6 +643,8 @@ class PolkadexExchange(ExchangePyBase):
     #         #  self.is_trading_required else True,
     #     }
     async def _initialize_trading_pair_symbol_map(self):
+        print("initialize_trading_pair")
+        print("user_proxy_address: ",self.user_proxy_address)
         markets = await get_all_markets(self.host, self.user_proxy_address)
         print("Get all markets result: ", markets)
         mapping = bidict()
