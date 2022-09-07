@@ -5,7 +5,7 @@ from gql.transport.exceptions import TransportQueryError
 
 from hummingbot.connector.exchange.polkadex.graphql.auth.client import execute_query_command
 
-async def cancel_order(params, url, api_key):
+async def cancel_order(params, url, proxy_addr):
     mutation = gql(
         """
     mutation CancelOrder($input: UserActionInput!) {
@@ -17,7 +17,7 @@ async def cancel_order(params, url, api_key):
     encoded_params = json.dumps({"CancelOrder": params});
     variables = {"input": {"payload": encoded_params}}
     try:
-        result = await execute_query_command(mutation, variables, url, api_key)
+        result = await execute_query_command(mutation, variables, url, proxy_addr)
         print("Cancel order result: ", result)
         return result["cancel_order"]
     except TransportQueryError as executionErr:
@@ -25,7 +25,7 @@ async def cancel_order(params, url, api_key):
         raise Exception("TransportQueryError")
 
 
-async def place_order(params, url, api_key):
+async def place_order(params, url, proxy_addr):
     print("Inside graphQl place order")
     try:
         mutation = gql(
@@ -40,7 +40,7 @@ async def place_order(params, url, api_key):
         variables = {"input": {"payload": encoded_params}}
         
         print("execute_query_command called")
-        result = await execute_query_command(mutation, variables, url, api_key)
+        result = await execute_query_command(mutation, variables, url, proxy_addr)
         print("Place order result: ", result)
         return result["place_order"]
     except Exception as err:
@@ -49,7 +49,7 @@ async def place_order(params, url, api_key):
 
 
 #working as expected
-async def get_all_balances_by_main_account(main, endpoint, api_key):
+async def get_all_balances_by_main_account(main, endpoint, proxy_addr):
     query = gql(
         """
 query getAllBalancesByMainAccount($main: String!) {
@@ -64,12 +64,12 @@ query getAllBalancesByMainAccount($main: String!) {
 """)
     variables = {"main": main}
 
-    result = await execute_query_command(query, variables, endpoint, api_key)
+    result = await execute_query_command(query, variables, endpoint, proxy_addr)
     return result["getAllBalancesByMainAccount"]["items"]
 
 
 
-async def find_order_by_main_account(main, order_id, market, endpoint, api_key):
+async def find_order_by_main_account(main, order_id, market, endpoint, proxy_addr):
     # TODO: Should We change this to client order id???
     query = gql(
         """
@@ -92,10 +92,10 @@ query findOrderByMainAccount($main: String!, $market: String!, $order_id: String
 }
 """)
     variables = {"order_id": order_id, "market": market, "main": main}
-    result = await execute_query_command(query, variables, endpoint, api_key)
+    result = await execute_query_command(query, variables, endpoint, proxy_addr)
     return result["findOrderByMainAccount"]
 
-async def get_main_acc_from_proxy_acc(proxy, endpoint, api_key):
+async def get_main_acc_from_proxy_acc(proxy, endpoint, proxy_addr):
     query = gql(
         """
 query findUserByProxyAccount($proxy_account: String!) {
@@ -106,7 +106,7 @@ query findUserByProxyAccount($proxy_account: String!) {
 """)
     variables = {"proxy_account": proxy}
 
-    result = await execute_query_command(query, variables, endpoint, api_key)
+    result = await execute_query_command(query, variables, endpoint, proxy_addr)
     print("result: ",result)
     main = result["findUserByProxyAccount"]["items"][0].split(",")[2][11:-1]
     print("FindUser by proxy result: ", main)

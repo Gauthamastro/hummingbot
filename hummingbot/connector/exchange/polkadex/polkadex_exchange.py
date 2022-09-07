@@ -69,6 +69,7 @@ class PolkadexExchange(ExchangePyBase):
         self.api_key = CONSTANTS.GRAPHQL_API_KEY
         # Extract host from url
         host = str(urlparse(self.endpoint).netloc)
+        self.host = host
         
         self._trading_pairs = trading_pairs
         self.is_trading_required_flag = trading_required
@@ -260,7 +261,7 @@ class PolkadexExchange(ExchangePyBase):
                 # raise Exception("Couldn't sign cancel request")
                 return False
             try:
-                result = await cancel_order(params, self.endpoint, self.api_key)
+                result = await cancel_order(params, self.host, self.user_proxy_address)
                 print("Result of cancel order: " + result)
             except:
                 print("Cancel order GQL query failed")
@@ -277,7 +278,7 @@ class PolkadexExchange(ExchangePyBase):
             try:
                 if self.user_main_address is None:
                     self.user_main_address = await get_main_acc_from_proxy_acc(self.user_proxy_address,
-                                                                            self.endpoint, self.api_key)
+                                                                            self.host, self.user_proxy_address)
             except:
                 print("Main account not found")
                 raise Exception("Main account not found")
@@ -317,7 +318,7 @@ class PolkadexExchange(ExchangePyBase):
                 raise Exception("Unable to create signature")
 
             try:
-                result = await place_order(params, self.endpoint, self.api_key)
+                result = await place_order(params, self.host, self.user_proxy_address)
                 print("Exchange result: ", result)
                 print("order id: ",order_id)
                 self.logger().info("Exchange order id: ", result)
@@ -445,8 +446,8 @@ class PolkadexExchange(ExchangePyBase):
     async def _user_stream_event_listener(self):
         print("(_user_stream_event_listener) Receive Event")
         if self.user_main_address is None:
-            self.user_main_address = await get_main_acc_from_proxy_acc(self.user_proxy_address, self.endpoint,
-                                                                       self.api_key)
+            self.user_main_address = await get_main_acc_from_proxy_acc(self.user_proxy_address, self.host,
+                                                                       self.user_proxy_address)
         transport = AppSyncWebsocketsTransport(url=self.endpoint, auth=self.auth)
         tasks = []
         async with Client(transport=transport, fetch_schema_from_transport=False) as session:
@@ -489,7 +490,7 @@ class PolkadexExchange(ExchangePyBase):
         }
         """
         print(" ---Format Trading Rules ---")
-        markets_data = await get_all_markets(self.endpoint, self.api_key)
+        markets_data = await get_all_markets(self.host, self.user_proxy_address)
         print("Get all markets result in _format_trading_rules: ", markets)
         rules = []
         
@@ -510,8 +511,8 @@ class PolkadexExchange(ExchangePyBase):
     async def _update_order_status(self):
         print("In Update order status")
         if self.user_main_address is None:
-            self.user_main_address = await get_main_acc_from_proxy_acc(self.user_proxy_address, self.endpoint,
-                                                                       self.api_key)
+            self.user_main_address = await get_main_acc_from_proxy_acc(self.user_proxy_address, self.host,
+                                                                       self.user_proxy_address)
         last_tick = self._last_poll_timestamp / UPDATE_ORDER_STATUS_MIN_INTERVAL
         current_tick = self.current_timestamp / UPDATE_ORDER_STATUS_MIN_INTERVAL
 
@@ -522,7 +523,7 @@ class PolkadexExchange(ExchangePyBase):
                 print("tracked_order exchange_id: ",tracked_order.exchange_order_id)
                 if tracked_order.exchange_order_id is not None:
                     result = await find_order_by_main_account(self.user_proxy_address, tracked_order.exchange_order_id,
-                                                              tracked_order.trading_pair, self.endpoint, self.api_key)
+                                                              tracked_order.trading_pair, self.host, self.user_proxy_address)
                     # TODO: Fix order update
                     print("Result of find order by main: ", result)
                     if result is None:
@@ -576,10 +577,10 @@ class PolkadexExchange(ExchangePyBase):
         local_asset_names = set(self._account_balances.keys())
         remote_asset_names = set()
         if self.user_main_address is None:
-            self.user_main_address = await get_main_acc_from_proxy_acc(self.user_proxy_address, self.endpoint,
-                                                                       self.api_key)
+            self.user_main_address = await get_main_acc_from_proxy_acc(self.user_proxy_address, self.host,
+                                                                       self.user_proxy_address)
         print("Checking balances for: ", self.user_main_address)
-        balances = await get_all_balances_by_main_account(self.user_main_address, self.endpoint, self.api_key)
+        balances = await get_all_balances_by_main_account(self.user_main_address, self.host, self.user_proxy_address)
         print("Updating balances: {:?}", balances)
         # self.logger().info(" ---- Balance Update: {:?} -----",balances);
 
@@ -641,7 +642,7 @@ class PolkadexExchange(ExchangePyBase):
     #         #  self.is_trading_required else True,
     #     }
     async def _initialize_trading_pair_symbol_map(self):
-        markets = await get_all_markets(self.endpoint, self.api_key)
+        markets = await get_all_markets(self.host, self.user_proxy_address)
         print("Get all markets result: ", markets)
         mapping = bidict()
         for market in markets:
@@ -654,5 +655,5 @@ class PolkadexExchange(ExchangePyBase):
         raise NotImplementedError
 
     async def _get_last_traded_price(self, trading_pair: str) -> float:
-        recent_trade = await get_recent_trades(trading_pair, 1, None, self.endpoint, self.api_key)
+        recent_trade = await get_recent_trades(trading_pair, 1, None, self.host, self.user_proxy_address)
         return p_utils.parse_price_or_qty(recent_trade[0]["p"])

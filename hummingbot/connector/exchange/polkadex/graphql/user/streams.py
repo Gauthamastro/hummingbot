@@ -64,7 +64,7 @@ subscription onCreateTrade($main: String!) {
         callback(result)
 
 
-async def on_transaction_update(main, callback):
+async def on_transaction_update(main, callback, host, proxy_addr):
     query = gql(
         """
 subscription onUpdateTransaction($main: String!) {
@@ -82,4 +82,4 @@ subscription onUpdateTransaction($main: String!) {
 """)
     variables = {"main": main}
 
-    await subscribe_query_command(query, variables, callback)
+    await subscribe_query_command(query, variables, callback, host, proxy_addr)

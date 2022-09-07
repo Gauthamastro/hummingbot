@@ -60,8 +60,8 @@ class PolkadexOrderbookDataSource(OrderBookTrackerDataSource):
     async def _order_book_snapshot(self, trading_pair: str) -> OrderBookMessage:
         print("Getting orderbook snapshot for: ", trading_pair)
         #result = dynamoDB
-        result: List[Dict[str, Any]] = await get_orderbook(trading_pair, None, None, self._connector.endpoint,
-                                                           self._api_key)
+        result: List[Dict[str, Any]] = await get_orderbook(trading_pair, None, None, self._connector.host,
+                                                           self._connector.user_proxy_address)
         snapshot_timestamp: float = time.time()
         snapshot_msg: OrderBookMessage = PolkadexOrderbook.snapshot_message_from_exchange(
             result,

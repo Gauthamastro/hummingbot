@@ -3,7 +3,7 @@ from gql import gql
 from hummingbot.connector.exchange.polkadex.graphql.auth.client import subscribe_query_command
 
 
-async def on_new_candle_stick(market, interval, callback):
+async def on_new_candle_stick(market, interval, callback, host, proxy_addr):
     print("in on_new_candle_stick")
     query = gql(
         """
@@ -21,10 +21,10 @@ subscription OnCandleStickEvents($interval: String!, $m: String!) {
 """)
     variables = {"m": market, "interval": interval}
 
-    await subscribe_query_command(query, variables, callback)
+    await subscribe_query_command(query, variables, callback, host, proxy_addr)
 
 
-async def on_new_ticker(market, callback):
+async def on_new_ticker(market, callback, host, proxy_addr):
     print("in on_new_ticker")
     query = gql(
         """
@@ -44,4 +44,4 @@ subscription OnNewTicker($m: String!) {
 """)
     variables = {"m": market}
 
-    await subscribe_query_command(query, variables, callback)
+    await subscribe_query_command(query, variables, callback, host, proxy_addr)
