@@ -164,7 +164,7 @@ class PolkadexExchange(ExchangePyBase):
         }
         print("Connecting to blockchain")
         self.blockchain = SubstrateInterface(
-            url="wss://blockchain.polkadex.trade",
+            url="ws://127.0.0.1:9944",
             ss58_format=POLKADEX_SS58_PREFIX,
             type_registry=custom_types
         )
@@ -228,7 +228,9 @@ class PolkadexExchange(ExchangePyBase):
         return "polkadex"
 
     async def _update_trading_rules(self):
-        trading_rules_list = self._format_trading_rules({})
+        print("updating trading rules")
+        trading_rules_list = await self._format_trading_rules({})
+        print("Got trading rules list: ",trading_rules_list)
         self._trading_rules.clear()
         for trading_rule in trading_rules_list:
             self._trading_rules[trading_rule.trading_pair] = trading_rule
@@ -492,7 +494,7 @@ class PolkadexExchange(ExchangePyBase):
         """
         print(" ---Format Trading Rules ---")
         markets_data = await get_all_markets(self.host, self.user_proxy_address)
-        print("Get all markets result in _format_trading_rules: ", markets)
+        print("Get all markets result in _format_trading_rules: ", markets_data)
         rules = []
         
 

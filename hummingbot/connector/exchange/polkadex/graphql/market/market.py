@@ -61,20 +61,21 @@ async def get_all_markets(endpoint, proxy_addr):
     print("inside get_all_markets")
     query = gql(
         """
-query MyQuery {
-  getAllMarkets {
-    items {
-      market
-      max_order_qty
-      max_price
-      min_order_qty
-      min_price
-      price_tick_size
-      qty_step_size
-      quote_asset_precision
+  query MyQuery {
+    getAllMarkets {
+      items {
+        base_asset_precision
+        market
+        max_order_price
+        max_order_qty
+        min_order_price
+        min_order_qty
+        price_tick_size
+        qty_step_size
+        quote_asset_precision
+      }
     }
   }
-}
 """)
     variables = {}
 

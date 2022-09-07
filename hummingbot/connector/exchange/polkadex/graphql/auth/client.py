@@ -8,15 +8,15 @@ from gql.transport.appsync_websockets import AppSyncWebsocketsTransport
 from hummingbot.connector.exchange.polkadex import polkadex_constants as CONSTANTS
 
 
-def get_env_vars():
-    url = os.environ.get("AWS_GRAPHQL_API_ENDPOINT")
-    api_key = os.environ.get("AWS_GRAPHQL_API_KEY")
+# def get_env_vars():
+#     url = os.environ.get("AWS_GRAPHQL_API_ENDPOINT")
+#     api_key = os.environ.get("AWS_GRAPHQL_API_KEY")
 
-    if url is None or api_key is None:
-        print("Missing environment variables")
-        sys.exit()
+#     if url is None or api_key is None:
+#         print("Missing environment variables")
+#         sys.exit()
 
-    return url, api_key
+#     return url, api_key
 
 
 # Returns a result after running graphql queries
