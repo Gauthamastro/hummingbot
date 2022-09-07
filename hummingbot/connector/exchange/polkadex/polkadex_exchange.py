@@ -32,7 +32,7 @@ from hummingbot.connector.exchange.polkadex.polkadex_constants import (
     MIN_PRICE,
     MIN_QTY,
     POLKADEX_SS58_PREFIX,
-    UPDATE_ORDER_STATUS_MIN_INTERVAL, UNIT_BALANCE, ORDER_STATE,
+    UPDATE_ORDER_STATUS_MIN_INTERVAL, ORDER_STATE,
 )
 from hummingbot.connector.exchange.polkadex.polkadex_order_book_data_source import PolkadexOrderbookDataSource
 from hummingbot.connector.exchange.polkadex.polkadex_payload import create_cancel_order_req, create_order
@@ -98,6 +98,7 @@ class PolkadexExchange(ExchangePyBase):
                         ["pair", "TradingPair"],
                         ["side", "OrderSide"],
                         ["order_type", "OrderType"],
+                        ["quote_order_quantity","String"]
                         ["qty", "String"],
                         ["price", "String"],
                         ["timestamp", "i64"],
@@ -188,9 +189,10 @@ class PolkadexExchange(ExchangePyBase):
     def client_order_id_prefix(self):
         return "HBOT"
 
+    #we don't need it as we will do it in _format_trading_rules
     @property
     def trading_rules_request_path(self):
-        raise NotImplementedError
+        return None
 
     @property
     def trading_pairs_request_path(self):
@@ -409,8 +411,8 @@ class PolkadexExchange(ExchangePyBase):
             fee = TradeFeeBase.new_spot_fee(
                 fee_schema=self.trade_fee_schema(),
                 trade_type=tracked_order.trade_type,
-                percent_token=Decimal(message["fee"]) / UNIT_BALANCE,
-                flat_fees=[TokenAmount(amount=Decimal(message["fee"]) / UNIT_BALANCE,
+                percent_token=Decimal(message["fee"]),
+                flat_fees=[TokenAmount(amount=Decimal(message["fee"]),
                                        token=fee_levied_asset(message["side"], base_asset, quote_asset))]
             )
             trade_update = TradeUpdate(
@@ -419,10 +421,10 @@ class PolkadexExchange(ExchangePyBase):
                 exchange_order_id=str(message["id"]),
                 trading_pair=tracked_order.trading_pair,
                 fee=fee,
-                fill_base_amount= Decimal(message["filled_quantity"]) / UNIT_BALANCE,
-                fill_quote_amount= (Decimal(message["filled_quantity"]) / UNIT_BALANCE) * (
-                        Decimal(message["avg_filled_price"]) / UNIT_BALANCE),
-                fill_price=Decimal(message["avg_filled_price"]) / UNIT_BALANCE,
+                fill_base_amount= Decimal(message["filled_quantity"]),
+                fill_quote_amount= (Decimal(message["filled_quantity"])) * (
+                        Decimal(message["avg_filled_price"])),
+                fill_price=Decimal(message["avg_filled_price"]),
                 fill_timestamp=ts,
             )
             self._order_tracker.process_trade_update(trade_update)
@@ -454,41 +456,55 @@ class PolkadexExchange(ExchangePyBase):
                                                        self.handle_websocket_message)))
             await asyncio.wait(tasks)
 
-    def _format_trading_rules(self, exchange_info_dict: Dict[str, Any]) -> List[TradingRule]:
+    async def _format_trading_rules(self, exchange_info_dict: Dict[str, Any]) -> List[TradingRule]:
         """
         Example:
         {
-            "symbol": "ETHBTC",
-            "baseAssetPrecision": 8,
-            "quotePrecision": 8,
-            "orderTypes": ["LIMIT", "MARKET"],
-            "filters": [
+        "data": {
+            "getAllMarkets": {
+            "items": [
                 {
-                    "filterType": "PRICE_FILTER",
-                    "minPrice": "0.00000100",
-                    "maxPrice": "100000.00000000",
-                    "tickSize": "0.00000100"
-                }, {
-                    "filterType": "LOT_SIZE",
-                    "minQty": "0.00100000",
-                    "maxQty": "100000.00000000",
-                    "stepSize": "0.00100000"
-                }, {
-                    "filterType": "MIN_NOTIONAL",
-                    "minNotional": "0.00100000"
+                "market": "PDEX-1",
+                "max_order_qty": "1000000000000000",
+                "max_price": "1000000000000000",
+                "min_order_qty": "1000000000000",
+                "min_price": "1000000000000",
+                "price_tick_size": "1",
+                "qty_step_size": "1",
+                "quote_asset_precision": "8"
+                },
+                {
+                "market": "PDEX-2",
+                "max_order_qty": "1000000000000000",
+                "max_price": "1000000000000000",
+                "min_order_qty": "1000000000000",
+                "min_price": "1000000000000",
+                "price_tick_size": "1",
+                "qty_step_size": "1",
+                "quote_asset_precision": "8"
                 }
             ]
+            }
+        }
         }
         """
+        print(" ---Format Trading Rules ---")
+        markets_data = await get_all_markets(self.endpoint, self.api_key)
+        print("Get all markets result in _format_trading_rules: ", markets)
         rules = []
+        
+
         print("In format trading pair rules")
-        for market in self.trading_pairs:
+        for market in markets_data:
             # TODO: Update this with a real endpoint and config
-            rules.append(TradingRule(market,
-                                     min_order_size=Decimal(1000000000000) / UNIT_BALANCE,
-                                     min_price_increment=MIN_PRICE,
-                                     min_base_amount_increment=MIN_QTY,
-                                     min_notional_size=MIN_PRICE * (Decimal(1000000000000) / UNIT_BALANCE)))
+            rules.append(TradingRule(market["market"],
+                                     min_order_size= Decimal(market["min_order_qty"]),#ToDo: Fix this
+                                     max_order_size = Decimal(market["max_order_qty"]),
+                                     min_price_increment= Decimal(market["price_tick_size"]),
+                                     min_base_amount_increment= Decimal(market["qty_step_size"]),
+                                     min_quote_amount_increment= Decimal(market["price_tick_size"]) * Decimal(market["qty_step_size"]),
+                                     max_price_significant_digit = Decimal(8)
+                                     ))
         return rules
 
     async def _update_order_status(self):

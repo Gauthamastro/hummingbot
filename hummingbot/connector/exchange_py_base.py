@@ -793,7 +793,9 @@ class ExchangePyBase(ExchangeBase, ABC):
     # === Exchange / Trading logic methods that call the API ===
 
     async def _update_trading_rules(self):
+        print("(Main Code Call _update_trading_rules")
         exchange_info = await self._api_get(path_url=self.trading_rules_request_path)
+        print("exchange_info: ",exchange_info)
         trading_rules_list = await self._format_trading_rules(exchange_info)
         self._trading_rules.clear()
         for trading_rule in trading_rules_list:

@@ -1,7 +1,6 @@
 from decimal import Decimal
 from venv import create
 
-from hummingbot.connector.exchange.polkadex.polkadex_constants import UNIT_BALANCE
 from hummingbot.core.data_type.common import OrderType, TradeType
 
 
@@ -23,8 +22,8 @@ def create_order(runtime_config, price: Decimal, qty: Decimal, order_type, order
     cid = "0x" + bytes(cid).hex()   
     price = round(price,4)
     qty = round(qty,4)
-    print("qty: ",str(qty * UNIT_BALANCE))
-    print("price: ",str(price * UNIT_BALANCE))
+    print("qty: ",str(qty))
+    print("price: ",str(price))
     order = {
         "user": proxy,
         "main_account":  main,
@@ -32,8 +31,9 @@ def create_order(runtime_config, price: Decimal, qty: Decimal, order_type, order
             "base_asset": create_asset(base),
             "quote_asset": create_asset(quote)
         },
-        "qty": str(qty * UNIT_BALANCE)[0:13],#[0:8],#slicing qty
-        "price": str(price * UNIT_BALANCE)[0:13], #[0:8],#slicing price
+        "qty": str(qty)[0:13],#[0:8],#ToDo: May fail
+        "price": str(price)[0:13], #[0:8],#ToDo: May fail
+        "quote_order_quantity": "",
         "timestamp": ts,
         "client_order_id": cid
     }

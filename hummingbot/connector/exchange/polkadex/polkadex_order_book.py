@@ -6,7 +6,6 @@ import time
 
 from hummingbot.core.data_type.order_book import OrderBook
 
-from hummingbot.connector.exchange.polkadex.polkadex_constants import UNIT_BALANCE
 from hummingbot.core.data_type.order_book_message import OrderBookMessage, OrderBookMessageType
 from hummingbot.connector.exchange.polkadex import polkadex_constants as CONSTANTS
 from hummingbot.connector.exchange.polkadex import polkadex_utils as p_utils
