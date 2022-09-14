@@ -252,22 +252,22 @@ class PolkadexExchange(ExchangePyBase):
                 print("--- Cancelling Order Payload Amount: ", tracked_order.amount, "---")
                 print("--- Cancelling Order Payload ID : ", tracked_order.exchange_order_id, "---")
                 encoded_cancel_req = create_cancel_order_req(self.blockchain, tracked_order.exchange_order_id)
-            except:
-                print("Couldn't encode cancel request")
+            except Exception as e:
+                print("Couldn't encode cancel request: ",e)
                 return False
             try:
                 signature = self.proxy_pair.sign(encoded_cancel_req)
                 market = convert_ticker_to_enclave_trading_pair(tracked_order.trading_pair)
                 params = [tracked_order.exchange_order_id, self.user_proxy_address, market, {"Sr25519": signature.hex()}]
-            except:
-                print("Couldn't sign cancel request")
+            except Exception as e:
+                print("Couldn't sign cancel request: ",e)
                 # raise Exception("Couldn't sign cancel request")
                 return False
             try:
                 result = await cancel_order(params, self.host, self.user_proxy_address)
                 print("Result of cancel order: " + result)
-            except:
-                print("Cancel order GQL query failed")
+            except Exception as e:
+                print("Cancel order GQL query failed: ",e)
                 # raise Exception("Cancel order GQL query failed")
                 return False
             return True
@@ -276,27 +276,19 @@ class PolkadexExchange(ExchangePyBase):
 
     async def _place_order(self, order_id: str, trading_pair: str, amount: Decimal, trade_type: TradeType,
                            order_type: OrderType, price: Decimal) -> Tuple[str, float]:
-        print("--- Order Details Order id:",order_id," amount : ", amount, " order_type: ",order_type, "  price: ",price,"   trade_type: ",trade_type,"---")
+        print("--- Order Details Order id:",order_id," amount : ", amount, " order_type: ",order_type, "  price: ",price,"   trade_type: ",trade_type,"   trading_pair: ",trading_pair,"---")
         try:
             try:
                 if self.user_main_address is None:
                     self.user_main_address = await get_main_acc_from_proxy_acc(self.user_proxy_address,
                                                                             self.host, self.user_proxy_address)
-            except:
-                print("Main account not found")
+            except Exception as e:
+                print("Main account not found: ",e)
                 raise Exception("Main account not found")
 
             print("Main account: ", self.user_main_address)
 
-            try:
-                # print("user proxy address: ",self.user_proxy_address)
-                # pk = ss58_decode(self.user_proxy_address, valid_ss58_format=42)
-                # user_proxy = ss58_encode(pk, ss58_format=88)
-                ts = int(time.time())
-            #     print("Could Format it id: ",order_id)
-            except:
-                print("ts : ", ts)
-                raise Exception("ts failed")
+            ts = int(time.time())
 
             try:
                 #converting to type GQL can understand 
@@ -306,8 +298,8 @@ class PolkadexExchange(ExchangePyBase):
                                                     trading_pair.split("-")[1],
                                                     int(time.time()))
                 print("Coud GQL id: ",order_id)
-            except:
-                print("Couldn't GQL")
+            except Exception as e:
+                print("Couldn't GQL: ",e)
                 self.logger().error("Unable to create encoded order: ", order_id);
                 raise Exception("Unable to create encoded order")
 
@@ -315,8 +307,8 @@ class PolkadexExchange(ExchangePyBase):
                 signature = self.proxy_pair.sign(encoded_order)
                 params = [order, {"Sr25519": signature.hex()}]
                 print("signature sucess id: ",order_id)
-            except:
-                print("signature failure id: ",order_id)
+            except Exception as e:
+                print("signature failure id: ",order_id,"    e: ",e)
                 self.logger().error("Signature error for id: ",order_id)
                 raise Exception("Unable to create signature")
 
@@ -357,9 +349,10 @@ class PolkadexExchange(ExchangePyBase):
             }
         }
         """
+        print("Balance Update call: ",message)
         message = message["data"]["websocket_streams"]["data"]["SetBalance"]
         self.logger().info("Callback message : ",message)
-        print("Callback message : {:?}",message)
+        print("Balance Callback message : {:?}",message)
         asset_name = convert_asset_to_ticker(message["asset"])
 
 
@@ -390,7 +383,8 @@ class PolkadexExchange(ExchangePyBase):
                 "order_type":"LIMIT",
                 "qty":10,
                 "price":10,
-                "nonce":100
+                "quote_order_qty":0,
+                "timestamp": 11
             }
         }
         """
@@ -402,7 +396,9 @@ class PolkadexExchange(ExchangePyBase):
         # ts = parser.parse(message["time"]).timestamp()
         ts = time.time()
         tracked_order = self.in_flight_orders.get(message["client_order_id"])
+        print("tracked_order: ",tracked_order)
         if tracked_order is not None:
+            print("Parsed Order: ",tracked_order)
             order_update = OrderUpdate(
                 trading_pair=tracked_order.trading_pair,
                 update_timestamp=ts,
@@ -457,7 +453,7 @@ class PolkadexExchange(ExchangePyBase):
             tasks.append(
                 asyncio.create_task(
                     websocket_streams_session_provided(self.user_main_address, session,
-                                                       self.handle_websocket_message)))
+                                                       self.handle_websocket_message)))#ToDo: Function requires an argument
             await asyncio.wait(tasks)
 
     async def _format_trading_rules(self, exchange_info_dict: Dict[str, Any]) -> List[TradingRule]:
@@ -507,8 +503,9 @@ class PolkadexExchange(ExchangePyBase):
                                      min_price_increment= Decimal(market["price_tick_size"]),
                                      min_base_amount_increment= Decimal(market["qty_step_size"]),
                                      min_quote_amount_increment= Decimal(market["price_tick_size"]) * Decimal(market["qty_step_size"]),
-                                     max_price_significant_digit = Decimal(8)
+                                     max_price_significant_digits = Decimal(8)
                                      ))
+        print("--- formatted rules: ",rules,"  ---")
         return rules
 
     async def _update_order_status(self):

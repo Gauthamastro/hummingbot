@@ -31,9 +31,9 @@ def create_order(runtime_config, price: Decimal, qty: Decimal, order_type, order
             "base_asset": create_asset(base),
             "quote_asset": create_asset(quote)
         },
-        "qty": str(qty)[0:13],#[0:8],#ToDo: May fail
-        "price": str(price)[0:13], #[0:8],#ToDo: May fail
-        "quote_order_quantity": "",
+        "qty": str(qty)[0:12],#[0:8],#ToDo: May fail
+        "price": str(price)[0:12], #[0:8],#ToDo: May fail
+        "quote_order_quantity": "0",
         "timestamp": ts,
         "client_order_id": cid
     }

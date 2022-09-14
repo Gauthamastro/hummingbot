@@ -19,6 +19,7 @@ async def cancel_order(params, url, proxy_addr):
     try:
         result = await execute_query_command(mutation, variables, url, proxy_addr)
         print("Cancel order result: ", result)
+        print("After formatting cancel order: ",result["cancel_order"])
         return result["cancel_order"]
     except TransportQueryError as executionErr:
         print("Error while cancelling orders: ", executionErr.errors)
@@ -42,6 +43,8 @@ async def place_order(params, url, proxy_addr):
         print("execute_query_command called")
         result = await execute_query_command(mutation, variables, url, proxy_addr)
         print("Place order result: ", result)
+        print("After formatting cancel order: ",result["place_order"])
+
         return result["place_order"]
     except Exception as err:
         print("---place_order in user folder passing an exception--- : ",err)
