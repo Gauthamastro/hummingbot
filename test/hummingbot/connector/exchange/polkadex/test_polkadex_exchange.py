@@ -83,7 +83,7 @@ class PolkadexExchangeUnitTests(unittest.TestCase):
 
     @aioresponses()
     def test_get_last_traded_price(self, mock_api):
-        raw_url = "https://tvgzxcclnnbgthbor5xdfodqoa.appsync-api.ap-south-1.amazonaws.com/graphql"
+        raw_url = "https://m5dyyjw5pbcdbpnphi7mf6x4ba.appsync-api.ap-south-1.amazonaws.com/graphql"
         resp = {
             "data": {
                 "getRecentTrades": {
@@ -103,7 +103,7 @@ class PolkadexExchangeUnitTests(unittest.TestCase):
     # Need response from `get_all_markets`
     @aioresponses()
     def test_initialize_trading_pair_symbols(self, mock_api):
-        raw_url = "https://tvgzxcclnnbgthbor5xdfodqoa.appsync-api.ap-south-1.amazonaws.com/graphql"
+        raw_url = "https://m5dyyjw5pbcdbpnphi7mf6x4ba.appsync-api.ap-south-1.amazonaws.com/graphql"
         resp = {
   "data": {
     "getAllMarkets": {
@@ -126,7 +126,7 @@ class PolkadexExchangeUnitTests(unittest.TestCase):
     # Need query from user.py in graphql
     @aioresponses()
     def test_update_balances(self, mock_api):
-        raw_url = "https://tvgzxcclnnbgthbor5xdfodqoa.appsync-api.ap-south-1.amazonaws.com/graphql"
+        raw_url = "https://m5dyyjw5pbcdbpnphi7mf6x4ba.appsync-api.ap-south-1.amazonaws.com/graphql"
         resp = {
             "data": {
                 "findUserByProxyAccount": {
@@ -165,7 +165,7 @@ class PolkadexExchangeUnitTests(unittest.TestCase):
     # Need to query user.py in graphql
     @aioresponses()
     def test_update_order_status(self, mock_api):
-        raw_url = "https://tvgzxcclnnbgthbor5xdfodqoa.appsync-api.ap-south-1.amazonaws.com/graphql"
+        raw_url = "https://m5dyyjw5pbcdbpnphi7mf6x4ba.appsync-api.ap-south-1.amazonaws.com/graphql"
         resp = {
             "data": {
                 "findUserByProxyAccount": {
@@ -182,7 +182,7 @@ class PolkadexExchangeUnitTests(unittest.TestCase):
     
     @aioresponses()
     def test_update_order_status_tracked_orders(self, mock_api):
-        raw_url = "https://tvgzxcclnnbgthbor5xdfodqoa.appsync-api.ap-south-1.amazonaws.com/graphql"
+        raw_url = "https://m5dyyjw5pbcdbpnphi7mf6x4ba.appsync-api.ap-south-1.amazonaws.com/graphql"
         resp = {
             "data": {
                 "findUserByProxyAccount": {
@@ -237,7 +237,7 @@ class PolkadexExchangeUnitTests(unittest.TestCase):
 
     @aioresponses()
     def test_update_order_status_exchange_id_none(self, mock_api):
-        raw_url = "https://tvgzxcclnnbgthbor5xdfodqoa.appsync-api.ap-south-1.amazonaws.com/graphql"
+        raw_url = "https://m5dyyjw5pbcdbpnphi7mf6x4ba.appsync-api.ap-south-1.amazonaws.com/graphql"
         resp = {
             "data": {
                 "findUserByProxyAccount": {
@@ -277,7 +277,7 @@ class PolkadexExchangeUnitTests(unittest.TestCase):
 
     @aioresponses()
     def test_update_order_status_exchange_result_none(self, mock_api):
-        raw_url = "https://tvgzxcclnnbgthbor5xdfodqoa.appsync-api.ap-south-1.amazonaws.com/graphql"
+        raw_url = "https://m5dyyjw5pbcdbpnphi7mf6x4ba.appsync-api.ap-south-1.amazonaws.com/graphql"
         resp = {
             "data": {
                 "findUserByProxyAccount": {
@@ -367,6 +367,7 @@ class PolkadexExchangeUnitTests(unittest.TestCase):
         order_book_message = self.async_run_with_timeout(
             self.connector._place_order(order_id="0xb7be03c528a2eb771b2b076cf869c69b0d9f1f508b199ba601d6f043c40d994e", trading_pair=self.trading_pair, amount=Decimal("1000.0"), trade_type=TradeType.BUY, order_type=OrderType.LIMIT, price=Decimal("1000.0"))
         )
+        print("Order Book message recv after order: ",order_book_message)
         self.assertEqual(1,0)
     
     def test_fee_levied_asset(self):
@@ -397,7 +398,7 @@ class PolkadexExchangeUnitTests(unittest.TestCase):
 
     @aioresponses()
     def test_update_trading_rules(self, mock_api):
-        raw_url = "https://tvgzxcclnnbgthbor5xdfodqoa.appsync-api.ap-south-1.amazonaws.com/graphql"
+        raw_url = "https://m5dyyjw5pbcdbpnphi7mf6x4ba.appsync-api.ap-south-1.amazonaws.com/graphql"
         resp = {
   "data": {
     "getAllMarkets": {
@@ -439,7 +440,7 @@ class PolkadexExchangeUnitTests(unittest.TestCase):
             price=Decimal("1.0"),
             exchange_order_id="0x1f6853a78a1629c15fc3db2da3c902169ddd7a72f243d0b753a06f4ec62556a5"
         )
-        raw_url = "https://tvgzxcclnnbgthbor5xdfodqoa.appsync-api.ap-south-1.amazonaws.com/graphql"
+        raw_url = "https://m5dyyjw5pbcdbpnphi7mf6x4ba.appsync-api.ap-south-1.amazonaws.com/graphql"
         resp = {
             "data":{
                 "cancel_order": "True"
@@ -464,7 +465,7 @@ class PolkadexExchangeUnitTests(unittest.TestCase):
             price=Decimal("1.0"),
             exchange_order_id="HBOTBPX1118318974b805f4676d66446"
         )
-        raw_url = "https://tvgzxcclnnbgthbor5xdfodqoa.appsync-api.ap-south-1.amazonaws.com/graphql"
+        raw_url = "https://m5dyyjw5pbcdbpnphi7mf6x4ba.appsync-api.ap-south-1.amazonaws.com/graphql"
         resp = {
             "data":{
                 "cancel_order": "True"
@@ -488,7 +489,7 @@ class PolkadexExchangeUnitTests(unittest.TestCase):
             price=Decimal("1.0"),
             exchange_order_id="0x1f6853a78a1629c15fc3db2da3c902169ddd7a72f243d0b753a06f4ec62556a5"
         )
-        raw_url = "https://tvgzxcclnnbgthbor5xdfodqoa.appsync-api.ap-south-1.amazonaws.com/graphql"
+        raw_url = "https://m5dyyjw5pbcdbpnphi7mf6x4ba.appsync-api.ap-south-1.amazonaws.com/graphql"
         resp = {
             "data":{
                 "cancel_order": "True"
@@ -513,7 +514,7 @@ class PolkadexExchangeUnitTests(unittest.TestCase):
             price=Decimal("1.0"),
         )
 
-        raw_url = "https://tvgzxcclnnbgthbor5xdfodqoa.appsync-api.ap-south-1.amazonaws.com/graphql"
+        raw_url = "https://m5dyyjw5pbcdbpnphi7mf6x4ba.appsync-api.ap-south-1.amazonaws.com/graphql"
         resp = {
             "data": {
                 "findUserByProxyAccount": {
@@ -534,6 +535,8 @@ class PolkadexExchangeUnitTests(unittest.TestCase):
         order_book_message = self.async_run_with_timeout(
             self.connector._place_order(order_id="HBOTBPX1118318974b805f4676d66446", trading_pair=str("PDEX-1"), amount=Decimal("1.0"), trade_type=TradeType.BUY, order_type=OrderType.LIMIT, price=Decimal("1.0"))
         )
+        print("order_book_message recv after placing order: ",order_book_message)
+        assert(1==2)
 
     @aioresponses()
     def test_place_order_could_not_encode(self, mock_api):
@@ -547,7 +550,7 @@ class PolkadexExchangeUnitTests(unittest.TestCase):
             price=Decimal("1.0"),
         )
 
-        raw_url = "https://tvgzxcclnnbgthbor5xdfodqoa.appsync-api.ap-south-1.amazonaws.com/graphql"
+        raw_url = "https://m5dyyjw5pbcdbpnphi7mf6x4ba.appsync-api.ap-south-1.amazonaws.com/graphql"
         resp = {
             "data": {
                 "findUserByProxyAccount": {
@@ -575,7 +578,7 @@ class PolkadexExchangeUnitTests(unittest.TestCase):
             price=Decimal("1.0"),
         )
 
-        raw_url = "https://tvgzxcclnnbgthbor5xdfodqoa.appsync-api.ap-south-1.amazonaws.com/graphql"
+        raw_url = "https://m5dyyjw5pbcdbpnphi7mf6x4ba.appsync-api.ap-south-1.amazonaws.com/graphql"
         resp = {
             "data": {
                 "findUserByProxyAccount": {
@@ -593,6 +596,7 @@ class PolkadexExchangeUnitTests(unittest.TestCase):
 
     def test_order_update_callback(self):
         msg = {
+                "type": "SetOrder",
                 "event_id":10, 
                 "client_order_id":"0xb7be03c528a2eb771b2b076cf869c69b0d9f1f508b199ba601d6f043c40d994e", 
                 "avg_filled_price":10, 
@@ -612,9 +616,8 @@ class PolkadexExchangeUnitTests(unittest.TestCase):
         request = {
             "data":{
                 "websocket_streams":{
-                    "data": {
-                        "SetOrder": msg
-                    }
+                    "data": 
+                         msg
                 }
             }
         }
@@ -630,9 +633,11 @@ class PolkadexExchangeUnitTests(unittest.TestCase):
         self.connector.in_flight_orders[order.client_order_id] = order
         # self.in_flight_orders.get(message["client_order_id"]) 
         self.connector.order_update_callback(request)
+        # assert(1==2)
 
     def test_balance_update_callback(self):
         msg = {
+                "type": "SetBalance",
                 "event_id": 0,
                 "user":"5C62Ck4UrFPiBtoCmeSrgF7x9yv9mn38446dhCpsi2mLHiFT", 
                 "asset":"polkadex", 
@@ -644,16 +649,18 @@ class PolkadexExchangeUnitTests(unittest.TestCase):
         request = {
             "data":{
                 "websocket_streams":{
-                    "data": {
-                        "SetBalance": msg
-                    }
+                    "data": 
+                        msg
                 }
             }
         }
         self.connector.balance_update_callback(request)
+        print("Balance Update reached here")
+        assert(1==2)
 
     def test_handle_websocket_message(self):
         msg = {
+                "type": "SetBalance",
                 "event_id": 0,
                 "user":"5C62Ck4UrFPiBtoCmeSrgF7x9yv9mn38446dhCpsi2mLHiFT", 
                 "asset":"polkadex", 
@@ -665,14 +672,14 @@ class PolkadexExchangeUnitTests(unittest.TestCase):
         request = {
             "data":{
                 "websocket_streams":{
-                    "data": {
-                        "SetBalance": msg
-                    }
+                    "data": msg
                 }
             }
         }
+        print("request 1: ",request)
         self.connector.handle_websocket_message(request)
         msg = {
+                "type": "SetOrder",
                 "event_id":10, 
                 "client_order_id":"0xb7be03c528a2eb771b2b076cf869c69b0d9f1f508b199ba601d6f043c40d994e", 
                 "avg_filled_price":10, 
@@ -692,17 +699,17 @@ class PolkadexExchangeUnitTests(unittest.TestCase):
         request = {
             "data":{
                 "websocket_streams":{
-                    "data": {
-                        "SetOrder": msg
-                    }
+                    "data": msg
                 }
             }
         }
+        print("request 2: ",request)
         self.connector.handle_websocket_message(request)
+        assert(1,2)
 
     @aioresponses()
     def test_user_stream_event_listener(self, mock_api):
-        raw_url = "https://tvgzxcclnnbgthbor5xdfodqoa.appsync-api.ap-south-1.amazonaws.com/graphql"
+        raw_url = "https://m5dyyjw5pbcdbpnphi7mf6x4ba.appsync-api.ap-south-1.amazonaws.com/graphql"
         resp = {
             "data": {
                 "findUserByProxyAccount": {

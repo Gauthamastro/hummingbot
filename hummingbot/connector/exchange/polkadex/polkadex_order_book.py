@@ -57,7 +57,7 @@ class PolkadexOrderbook(OrderBook):
             "update_id": -1
         }, timestamp=timestamp)
 
-    #not working
+    #Todo: not working
     @classmethod
     def diff_message_from_exchange(cls,
                                    msg: Dict[str, any],
@@ -70,9 +70,6 @@ class PolkadexOrderbook(OrderBook):
         :param metadata: a dictionary with extra information to add to the difference data
         :return: a diff message with the changes in the order book notified by the exchange
 
-
-
-
         Expected data structure
         {
             "websocket_streams": {
@@ -80,7 +77,7 @@ class PolkadexOrderbook(OrderBook):
             }
         }
         """
-        print("In Diff message from exchnage")
+        print("Diff message recv from exchange, ",msg)
         if metadata:
             msg.update(metadata)
         print("IV: ",msg)
@@ -147,9 +144,9 @@ class PolkadexOrderbook(OrderBook):
 
         expected data structure
 
-        {"side":"Ask","price":5554500000000,"qty":7999200000000,HBOTBPX221825c769eb1f581587e1bb1v ,"seq":20}
+        { ["Ask",5.554500000000,7.999200000000,HBOTBPX221825c769eb1f581587e1bb1v ,"seq":20]}
         """
-        print("Public trade message: ", msg)
+        print("Trade message from exchange: ", msg)
         # msg = msg["websocket_streams"]["data"]
         if metadata:
             msg.update(metadata)

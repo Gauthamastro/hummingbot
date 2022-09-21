@@ -67,6 +67,7 @@ class PolkadexExchange(ExchangePyBase):
         self.endpoint = CONSTANTS.GRAPHQL_ENDPOINT
         self.wss_url = CONSTANTS.GRAPHQL_WSS_ENDPOINT
         self.api_key = CONSTANTS.GRAPHQL_API_KEY
+        print("Hey hey")
         # Extract host from url
         host = str(urlparse(self.endpoint).netloc)
         self.host = host
@@ -300,7 +301,6 @@ class PolkadexExchange(ExchangePyBase):
                 print("Coud GQL id: ",order_id)
             except Exception as e:
                 print("Couldn't GQL: ",e)
-                self.logger().error("Unable to create encoded order: ", order_id);
                 raise Exception("Unable to create encoded order")
 
             try:
@@ -309,14 +309,12 @@ class PolkadexExchange(ExchangePyBase):
                 print("signature sucess id: ",order_id)
             except Exception as e:
                 print("signature failure id: ",order_id,"    e: ",e)
-                self.logger().error("Signature error for id: ",order_id)
                 raise Exception("Unable to create signature")
 
             try:
                 result = await place_order(params, self.host, self.user_proxy_address)
                 print("Exchange result: ", result)
                 print("order id: ",order_id)
-                self.logger().info("Exchange order id: ", result)
                 
                 if result is not None:
                     return result, ts
@@ -336,10 +334,12 @@ class PolkadexExchange(ExchangePyBase):
                  is_maker: Optional[bool] = None) -> TradeFeeBase:
         return DeductedFromReturnsTradeFee(percent=self.estimate_fee_pct(is_maker))
     
+    
+    #ToDo: Need to change balance parsing
     def balance_update_callback(self, message):
         """ Expected message structure
-        {"SetBalance":
-            {
+            {   
+                "type": "SetBalance"
                 "event_id":0,
                 "user":"5C62Ck4UrFPiBtoCmeSrgF7x9yv9mn38446dhCpsi2mLHiFT",
                 "asset":"polkadex",
@@ -347,29 +347,31 @@ class PolkadexExchange(ExchangePyBase):
                 "pending_withdrawal":0,
                 "reserved":0
             }
-        }
+        
         """
         print("Balance Update call: ",message)
-        message = message["data"]["websocket_streams"]["data"]["SetBalance"]
+        message = message["data"]["websocket_streams"]["data"]
         self.logger().info("Callback message : ",message)
-        print("Balance Callback message : {:?}",message)
+        print("Balance Callback message",message)
         asset_name = convert_asset_to_ticker(message["asset"])
 
 
         free_balance = p_utils.parse_price_or_qty(message["free"])
         total_balance = p_utils.parse_price_or_qty(message["free"]) + p_utils.parse_price_or_qty(message["reserved"])
-
-        self._account_available_balances[asset_name] = free_balance
-        self._account_balances[asset_name] = total_balance
-        self.logger().info("Callback free_balance : ",free_balance,", asset_name : ",asset_name)
-        self.logger().info("Callback total_balance : ",total_balance,"  asset_name : ",asset_name)
-        print("Callback free_balance : ",free_balance," asset_name : ",asset_name)
-        print("Callback total_balance : ",total_balance," asset_name : ",asset_name)
+        print("free_balance: ",free_balance)
+        print("total_balance: ",total_balance)
         
+        self._account_available_balances[asset_name] = free_balance
+        print("Reached here 1")
+        self._account_balances[asset_name] = total_balance
+        print("Reached here 2")
+        print("Account Balance: ",self._account_available_balances[asset_name])
+
+    #ToDo: Need to change set order parsing
     def order_update_callback(self, message):
         """ Expected message structure
         {
-            "SetOrder":{
+                "type": "SetOrder"
                 "event_id":10,
                 "client_order_id":"0xb7be03c528a2eb771b2b076cf869c69b0d9f1f508b199ba601d6f043c40d994e",
                 "avg_filled_price":10,
@@ -385,11 +387,10 @@ class PolkadexExchange(ExchangePyBase):
                 "price":10,
                 "quote_order_qty":0,
                 "timestamp": 11
-            }
         }
         """
         print(" --- Order Update Callback: ",message," ---\n")
-        message = message["data"]["websocket_streams"]["data"]["SetOrder"]
+        message = message["data"]["websocket_streams"]["data"]
         market, base_asset, quote_asset = convert_pair_to_market(message["pair"])
         print("trading pair", market)
 
@@ -432,12 +433,23 @@ class PolkadexExchange(ExchangePyBase):
     async def _update_trading_fees(self):
         raise NotImplementedError
 
+    #ToDo: If above two functions (balance/update) are change here 
     def handle_websocket_message(self, message: Dict):
-        print("New websocket message: ", message)
-        self.logger().info("New websocket message: ", message)
-        if "SetBalance" in message["data"]["websocket_streams"]["data"]:
+        """
+        {'data': {'websocket_streams': {
+            'data': {'type': 'SetBalance', 
+            'event_id': 0, 'user': '5C62Ck4UrFPiBtoCmeSrgF7x9yv9mn38446dhCpsi2mLHiFT',
+             'asset': 'polkadex', 'free': 0, 'pending_withdrawal': 0, 'reserved': 0}
+             }
+            }
+        }
+        """
+    
+        print(" ---- New websocket message: ", message)
+        # self.logger().info("----- New websocket message: ", message)
+        if "SetBalance" in message["data"]["websocket_streams"]["data"]["type"]:
             self.balance_update_callback(message)
-        elif "SetOrder" in message["data"]["websocket_streams"]["data"]:
+        elif "SetOrder" in message["data"]["websocket_streams"]["data"]["type"]:
             self.order_update_callback(message)
         else:
             print("Unknown message from user websocket stream")
@@ -456,6 +468,7 @@ class PolkadexExchange(ExchangePyBase):
                                                        self.handle_websocket_message)))#ToDo: Function requires an argument
             await asyncio.wait(tasks)
 
+    #ToDo: Trading rules parsing also needs to be change
     async def _format_trading_rules(self, exchange_info_dict: Dict[str, Any]) -> List[TradingRule]:
         """
         Example:
@@ -571,7 +584,8 @@ class PolkadexExchange(ExchangePyBase):
                     #     new_state=new_state,
                     # )
                     # self._order_tracker.process_order_update(update)
-
+                    
+    #ToDo: Balances parsing also needs to be change
     async def _update_balances(self):
         print("Inside update balanance")
         local_asset_names = set(self._account_balances.keys())
