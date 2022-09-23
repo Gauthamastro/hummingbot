@@ -8,7 +8,8 @@ from urllib.parse import urlparse
 from bidict import bidict
 from dateutil import parser
 from gql import Client
-from    gql.transport.appsync_auth import AppSyncApiKeyAuthentication, AppSyncJWTAuthentication
+from gql import gql
+from gql.transport.appsync_auth import AppSyncApiKeyAuthentication, AppSyncJWTAuthentication
 from gql.transport.appsync_websockets import AppSyncWebsocketsTransport
 from gql.transport.exceptions import TransportQueryError
 from hummingbot.connector.trading_rule import TradingRule
@@ -67,7 +68,7 @@ class PolkadexExchange(ExchangePyBase):
         self.endpoint = CONSTANTS.GRAPHQL_ENDPOINT
         self.wss_url = CONSTANTS.GRAPHQL_WSS_ENDPOINT
         self.api_key = CONSTANTS.GRAPHQL_API_KEY
-        print("Hey hey")
+        print("-- Hey hey")
         # Extract host from url
         host = str(urlparse(self.endpoint).netloc)
         self.host = host
@@ -371,7 +372,7 @@ class PolkadexExchange(ExchangePyBase):
     def order_update_callback(self, message):
         """ Expected message structure
         {
-                "type": "SetOrder"
+                "type": "Order"
                 "event_id":10,
                 "client_order_id":"0xb7be03c528a2eb771b2b076cf869c69b0d9f1f508b199ba601d6f043c40d994e",
                 "avg_filled_price":10,
@@ -449,24 +450,37 @@ class PolkadexExchange(ExchangePyBase):
         # self.logger().info("----- New websocket message: ", message)
         if "SetBalance" in message["data"]["websocket_streams"]["data"]["type"]:
             self.balance_update_callback(message)
-        elif "SetOrder" in message["data"]["websocket_streams"]["data"]["type"]:
+        elif "Order" in message["data"]["websocket_streams"]["data"]["type"]:
             self.order_update_callback(message)
         else:
             print("Unknown message from user websocket stream")
 
     async def _user_stream_event_listener(self):
-        print("(_user_stream_event_listener) Receive Event")
+        print("(_user_stream_event_listener) --- Receive Event")
         if self.user_main_address is None:
             self.user_main_address = await get_main_acc_from_proxy_acc(self.user_proxy_address, self.host,
                                                                        self.user_proxy_address)
         transport = AppSyncWebsocketsTransport(url=self.endpoint, auth=self.auth)
         tasks = []
         async with Client(transport=transport, fetch_schema_from_transport=False) as session:
-            tasks.append(
-                asyncio.create_task(
-                    websocket_streams_session_provided(self.user_main_address, session,
-                                                       self.handle_websocket_message)))#ToDo: Function requires an argument
-            await asyncio.wait(tasks)
+            print("Waiting for messages ...")
+            subscription = gql("""subscription WebsocketStreamsMessage($name: String!) {websocket_streams(name: "esoJUCwnKaNEBR7PTdeUrC3e5HKkMs3pdnPkyPqKEUfLS9uCV") {data}}""")
+            print("Waiting for messages... ",subscription)
+            async for result in session.subscribe(subscription,self.user_proxy_address):
+                print(result)
+                await self.handle_websocket_message(result)
+        await asyncio.wait(tasks)
+
+
+
+        # async with Client(transport=transport, fetch_schema_from_transport=False) as session:
+        #     tasks.append(
+        #         asyncio.create_task(
+        #             websocket_streams_session_provided(self.user_main_address, session,
+        #                                                self.handle_websocket_message()
+        #                                                )
+        #             ))#ToDo: Function requires an argument
+        #     await asyncio.wait(tasks)
 
     #ToDo: Trading rules parsing also needs to be change
     async def _format_trading_rules(self, exchange_info_dict: Dict[str, Any]) -> List[TradingRule]:
@@ -643,18 +657,6 @@ class PolkadexExchange(ExchangePyBase):
                                             connector=self,
                                             api_factory=self._web_assistants_factory)
 
-    # @property
-    # def status_dict(self) -> Dict[str, bool]:
-    #     return {
-    #         # TODO: Fix this "symbols_mapping_initialized": self.trading_pair_symbol_map_ready(),
-    #         "symbols_mapping_initialized": True,
-    #         "order_books_initialized": self.order_book_tracker.ready,
-    #         "account_balance": not self.is_trading_required or len(self._account_balances) > 0,
-    #         "trading_rule_initialized": True,
-    #         "user_stream_initialized": True,
-    #         # "user_stream_initialized": TODO: Fix this   self._user_stream_tracker.data_source.last_recv_time > 0 if
-    #         #  self.is_trading_required else True,
-    #     }
     async def _initialize_trading_pair_symbol_map(self):
         print("initialize_trading_pair")
         print("user_proxy_address: ",self.user_proxy_address)

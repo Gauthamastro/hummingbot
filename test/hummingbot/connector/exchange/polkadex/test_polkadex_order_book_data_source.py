@@ -342,6 +342,20 @@ class PolkadexOrderBookDataSourceUnitTests(unittest.TestCase):
       # self.assertEqual(self.data_source._message_queue[self.data_source._diff_messages_queue_key]._queue[0], msg["websocket_streams"])
       # self.assertEqual(1,0)
 
+
+    @aioresponses()
+    def test_on_ob_increment_check(self, mock_api):
+      msg = {  
+              "websocket_streams": {
+                "data": 
+                '{"type":"IncOB","changes":[["Ask","3","2",123]]}'
+              }
+            }
+            
+      self.data_source.on_ob_increment(msg, self.trading_pair)
+      # self.assertEqual(self.data_source._message_queue[self.data_source._diff_messages_queue_key]._queue[0], msg["websocket_streams"])
+      self.assertEqual(1,0)
+
     def test_channel_originating_message(self):
       msg =  {  
               "websocket_streams": {

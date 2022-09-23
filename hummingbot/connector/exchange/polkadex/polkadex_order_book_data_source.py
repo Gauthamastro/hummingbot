@@ -1,6 +1,7 @@
 import asyncio
 import time
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
+import json
 
 from gql import Client
 from gql.transport.appsync_websockets import AppSyncWebsocketsTransport
@@ -70,14 +71,12 @@ class PolkadexOrderbookDataSource(OrderBookTrackerDataSource):
         )
         return snapshot_msg
 
-    #ToDo: Recent trade call back needs to be parsed
     def on_recent_trade_callback(self, message, trading_pair):
-        print("Recent trade: ", message)
-        #test it with the right message
-        #{"type":"TradeFormat","m":"PDEX-1","p":"100","q":"101","tid":"1234","t":12,"sid":"12345"}
+        #{"type":"TradeFormat","m":"PDEX-1","p":"6.565","q":"3","tid":"1824","t":1663934631939,"sid":"106"}
+
+        print("Listening for subscription Recent trade: ", message)
         new_message = {}
         new_message["data"] = []
-        #Trade doesn't have side: Check
         message = message["data"]["websocket_streams"]["data"]
         # message = message.literal_eval(message)
         print("new generated message: ",message)
@@ -90,48 +89,26 @@ class PolkadexOrderbookDataSource(OrderBookTrackerDataSource):
         print("new msg on trade: ", new_message)    
         self._message_queue[self._trade_messages_queue_key].put_nowait(message)
 
-    #ToDo: OB increment call back needs to be parsed
     def on_ob_increment(self, message, trading_pair):
-        #data" side, price, qty, id
-        #"data": "[[Ask,3,2,0],[Bid,2,2,0]]"
-        print("ob inc: ", message)
-        #test it with the right message
-        new_message = {}
+        # {  
+        #       "websocket_streams": {
+        #         "data": 
+        #         '{"type":"IncOB","changes":[["Ask","3","2",123]]}'
+        #       }
+        #     }
+        print("Listening for subscription  ob increment: ", message)
         message = message["websocket_streams"]["data"]
-        new_message["data"] = []
-        change["data"] = []
-
-        print("new generated message: ",message)
-        message = str(message)
-        message = message.replace(']','')
-        message = message.replace('[','')
-        message = message.split(',')
-        print("Parsed message: ",message)
-        mod_counter = 0
-        pre_final = []
-        last = []
-        for val in iter(message):
-            if mod_counter%4 == 0 and mod_counter!=0:
-                last.append(pre_final)
-                pre_final = []
-            pre_final.append(val)
-            index = index + 1
-        last.append(pre_final)
-        final_list = iter(final_list)
-
-        change = {
-        "type": "",
-        "price": 0,
-        "qty": 0,
-        "seq": 0
-        }
-
-        for element in final_list:
-            change.update({"type": p_utils.parse_price_or_qty(element[0])})
-            change.update({"price": p_utils.parse_price_or_qty(element[1])})
-            change.update({"qty": p_utils.parse_price_or_qty(element[2])})
-            change.update({"seq": p_utils.parse_price_or_qty(element[3])})
-            new_message["data"].append(change)
+        message = json.loads(message)
+        message = message["changes"]
+        print("message: ",message[0][0])
+        print("message: ",message[0][1])
+        print("message: ",message[0][2])
+        print("message: ",message[0][3])
+        new_message = {}
+        new_message["side"] = message[0][0]
+        new_message["price"] = message[0][1]
+        new_message["qty"] = message[0][2]
+        new_message["id"] = message[0][3]
         new_message["market"] = trading_pair
         print("new msg on ob_inc: ", new_message)
         self._message_queue[self._diff_messages_queue_key].put_nowait(new_message)

@@ -71,33 +71,28 @@ class PolkadexOrderbook(OrderBook):
         :return: a diff message with the changes in the order book notified by the exchange
 
         Expected data structure
-        {
-            "websocket_streams": {
-              "data": "[{\"side\":\"Ask\",\"price\":3,\"qty\":2,\"seq\":0},{\"side\":\"Bid\",\"price\":2,\"qty\":2,\"seq\":0}]"
-            }
-        }
+        {'side': 'Ask', 'price': '11.11', 'qty': '10.1', 'id': 263, 'market': 'PDEX-1'}
         """
         print("Diff message recv from exchange, ",msg)
         if metadata:
             msg.update(metadata)
         print("IV: ",msg)
         market = msg["market"]
-        msg = msg["websocket_streams"]["data"]
         print("Input msgs: ", msg)
-        msg = ast.literal_eval(msg)
         print("Changed: ", msg)
+        
+        if msg["qty"] == '0':
+            msg["price"] = '0'
 
         bids = []
         asks = []
         seq = 0
-        for change in msg:
-            print("Change: ", change)
-            if change["side"] == "Ask":
-                asks.append((p_utils.parse_price_or_qty(change["price"]), p_utils.parse_price_or_qty(change["qty"]), float(change["seq"])))
-                seq = float(change["seq"])
-            else:
-                bids.append((p_utils.parse_price_or_qty(change["price"]), p_utils.parse_price_or_qty(change["qty"]), float(change["seq"])))
-                seq = float(change["seq"])
+        if msg["side"] == "Ask":
+            asks.append((p_utils.parse_price_or_qty(msg["price"]), p_utils.parse_price_or_qty(msg["qty"]), float(msg["id"])))
+            seq = float(msg["id"])
+        else:
+            bids.append((p_utils.parse_price_or_qty(msg["price"]), p_utils.parse_price_or_qty(msg["qty"]), float(msg["id"])))
+            seq = float(msg["id"])
         print("(diff_message_from_exchange)bids: ",bids,"\n(diff_message_from_exchange)asks: ",asks)
         # timestamp = time.time()
         # convert ask and bid payload

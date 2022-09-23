@@ -13,8 +13,10 @@ subscription WebsocketStreamsMessage($name: String!) {
   }
 }
 """)
+    print("web socket message receive")
     variables = {"name": name}
 
     async for result in session.subscribe(query, variable_values=variables, parse_result=True):
+        print("web socket message recv something:",result,params)
         callback(result, params)
 
