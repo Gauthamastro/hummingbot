@@ -165,7 +165,7 @@ class PolkadexExchange(ExchangePyBase):
         }
         print("Connecting to blockchain")
         self.blockchain = SubstrateInterface(
-            url="ws://127.0.0.1:9944",
+            url="wss://blockchain.polkadex.trade",
             ss58_format=POLKADEX_SS58_PREFIX,
             type_registry=custom_types
         )

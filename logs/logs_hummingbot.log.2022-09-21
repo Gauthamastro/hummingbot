@@ -1,0 +1,26 @@
+2022-09-21 18:53:52,179 - 467506 - hummingbot.core.utils.trading_pair_fetcher - ERROR - Connector polkadex failed to retrieve its trading pairs. Trading pairs autocompletion won't work.
+Traceback (most recent call last):
+  File "/home/nakul/Desktop/Polkadex/new_hbot_branch/hummingbot/hummingbot/core/utils/trading_pair_fetcher.py", line 67, in call_fetch_pairs
+    pairs = await fetch_fn
+  File "hummingbot/connector/exchange_base.pyx", line 82, in all_trading_pairs
+    mapping = await self.trading_pair_symbol_map()
+  File "hummingbot/connector/exchange_base.pyx", line 62, in trading_pair_symbol_map
+    async with self._mapping_initialization_lock:
+  File "hummingbot/connector/exchange_base.pyx", line 64, in hummingbot.connector.exchange_base.ExchangeBase.trading_pair_symbol_map
+    await self._initialize_trading_pair_symbol_map()
+  File "/home/nakul/Desktop/Polkadex/new_hbot_branch/hummingbot/hummingbot/connector/exchange/polkadex/polkadex_exchange.py", line 651, in _initialize_trading_pair_symbol_map
+    print("user_proxy_address: ",self.user_proxy_address)
+AttributeError: 'PolkadexExchange' object has no attribute 'user_proxy_address'
+2022-09-21 21:30:06,452 - 584223 - hummingbot.core.utils.trading_pair_fetcher - ERROR - Connector polkadex failed to retrieve its trading pairs. Trading pairs autocompletion won't work.
+Traceback (most recent call last):
+  File "/home/nakul/Desktop/Polkadex/new_hbot_branch/hummingbot/hummingbot/core/utils/trading_pair_fetcher.py", line 67, in call_fetch_pairs
+    pairs = await fetch_fn
+  File "hummingbot/connector/exchange_base.pyx", line 82, in all_trading_pairs
+    mapping = await self.trading_pair_symbol_map()
+  File "hummingbot/connector/exchange_base.pyx", line 62, in trading_pair_symbol_map
+    async with self._mapping_initialization_lock:
+  File "hummingbot/connector/exchange_base.pyx", line 64, in hummingbot.connector.exchange_base.ExchangeBase.trading_pair_symbol_map
+    await self._initialize_trading_pair_symbol_map()
+  File "/home/nakul/Desktop/Polkadex/new_hbot_branch/hummingbot/hummingbot/connector/exchange/polkadex/polkadex_exchange.py", line 660, in _initialize_trading_pair_symbol_map
+    print("user_proxy_address: ",self.user_proxy_address)
+AttributeError: 'PolkadexExchange' object has no attribute 'user_proxy_address'
