@@ -456,31 +456,18 @@ class PolkadexExchange(ExchangePyBase):
             print("Unknown message from user websocket stream")
 
     async def _user_stream_event_listener(self):
-        print("(_user_stream_event_listener) --- Receive Event")
+        print("(_user_stream_event_listener) Receive Event")
         if self.user_main_address is None:
             self.user_main_address = await get_main_acc_from_proxy_acc(self.user_proxy_address, self.host,
                                                                        self.user_proxy_address)
         transport = AppSyncWebsocketsTransport(url=self.endpoint, auth=self.auth)
         tasks = []
         async with Client(transport=transport, fetch_schema_from_transport=False) as session:
-            print("Waiting for messages ...")
-            subscription = gql("""subscription WebsocketStreamsMessage($name: String!) {websocket_streams(name: "esoJUCwnKaNEBR7PTdeUrC3e5HKkMs3pdnPkyPqKEUfLS9uCV") {data}}""")
-            print("Waiting for messages... ",subscription)
-            async for result in session.subscribe(subscription,self.user_proxy_address):
-                print(result)
-                await self.handle_websocket_message(result)
+            tasks.append(
+                asyncio.create_task(
+                    websocket_streams_session_provided(self.user_main_address, session,
+                                                       self.handle_websocket_message)))
         await asyncio.wait(tasks)
-
-
-
-        # async with Client(transport=transport, fetch_schema_from_transport=False) as session:
-        #     tasks.append(
-        #         asyncio.create_task(
-        #             websocket_streams_session_provided(self.user_main_address, session,
-        #                                                self.handle_websocket_message()
-        #                                                )
-        #             ))#ToDo: Function requires an argument
-        #     await asyncio.wait(tasks)
 
     #ToDo: Trading rules parsing also needs to be change
     async def _format_trading_rules(self, exchange_info_dict: Dict[str, Any]) -> List[TradingRule]:

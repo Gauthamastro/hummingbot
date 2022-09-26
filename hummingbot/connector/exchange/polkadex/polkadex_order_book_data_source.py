@@ -122,14 +122,13 @@ class PolkadexOrderbookDataSource(OrderBookTrackerDataSource):
             for trading_pair in self._trading_pairs:
                 tasks.append(
                     asyncio.create_task(
-                        websocket_streams_session_provided(trasding_pair + "-recent-trades", session,
+                        websocket_streams_session_provided(trading_pair + "-recent-trades", session,
                                                            self.on_recent_trade_callback, trading_pair)))
                 tasks.append(
                     asyncio.create_task(
                         websocket_streams_session_provided(trading_pair + "-ob-inc", session,
                                                            self.on_ob_increment, trading_pair)))
             asyncio.wait(tasks)  
-            raise Exception("Coming out of for loop")     
 
     async def _subscribe_channels(self, ws: WSAssistant):
         pass
