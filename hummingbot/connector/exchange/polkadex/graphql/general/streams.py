@@ -15,8 +15,14 @@ subscription WebsocketStreamsMessage($name: String!) {
 """)
     print("web socket message receive")
     variables = {"name": name}
-
+    counter = 0
+    print("Going into for loop with counter", counter)
     async for result in session.subscribe(query, variable_values=variables, parse_result=True):
+        print("iteration no:", counter)
+        counter += 1
+        # raise Exception("web socket message recv something:",result,params)
         print("web socket message recv something:",result,params)
         callback(result, params)
+    
+    raise Exception("Coming out of for loop")   
 

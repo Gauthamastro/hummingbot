@@ -7,18 +7,15 @@ from urllib.parse import urlparse
 
 from bidict import bidict
 from dateutil import parser
-from gql import Client
-from gql import gql
+from gql import Client, gql
 from gql.transport.appsync_auth import AppSyncApiKeyAuthentication, AppSyncJWTAuthentication
 from gql.transport.appsync_websockets import AppSyncWebsocketsTransport
 from gql.transport.exceptions import TransportQueryError
-from hummingbot.connector.trading_rule import TradingRule
-from hummingbot.core.network_iterator import NetworkStatus
 from substrateinterface import Keypair, KeypairType, SubstrateInterface
-from substrateinterface.utils.ss58 import ss58_encode, ss58_decode
+from substrateinterface.utils.ss58 import ss58_decode, ss58_encode
 
 from hummingbot.connector.constants import s_decimal_NaN
-from hummingbot.connector.exchange.polkadex import polkadex_constants as CONSTANTS
+from hummingbot.connector.exchange.polkadex import polkadex_constants as CONSTANTS, polkadex_utils as p_utils
 from hummingbot.connector.exchange.polkadex.graphql.general.streams import websocket_streams_session_provided
 from hummingbot.connector.exchange.polkadex.graphql.market.market import get_all_markets, get_recent_trades
 from hummingbot.connector.exchange.polkadex.graphql.user.user import (
@@ -32,13 +29,17 @@ from hummingbot.connector.exchange.polkadex.polkadex_auth import PolkadexAuth
 from hummingbot.connector.exchange.polkadex.polkadex_constants import (
     MIN_PRICE,
     MIN_QTY,
+    ORDER_STATE,
     POLKADEX_SS58_PREFIX,
-    UPDATE_ORDER_STATUS_MIN_INTERVAL, ORDER_STATE,
+    UPDATE_ORDER_STATUS_MIN_INTERVAL,
 )
 from hummingbot.connector.exchange.polkadex.polkadex_order_book_data_source import PolkadexOrderbookDataSource
 from hummingbot.connector.exchange.polkadex.polkadex_payload import create_cancel_order_req, create_order
-from hummingbot.connector.exchange.polkadex.polkadex_utils import convert_asset_to_ticker, convert_pair_to_market, \
-    convert_ticker_to_enclave_trading_pair
+from hummingbot.connector.exchange.polkadex.polkadex_utils import (
+    convert_asset_to_ticker,
+    convert_pair_to_market,
+    convert_ticker_to_enclave_trading_pair,
+)
 from hummingbot.connector.exchange.polkadex.python_user_stream_data_source import PolkadexUserStreamDataSource
 from hummingbot.connector.exchange_py_base import ExchangePyBase
 from hummingbot.connector.trading_rule import TradingRule
@@ -50,7 +51,6 @@ from hummingbot.core.data_type.trade_fee import DeductedFromReturnsTradeFee, Tok
 from hummingbot.core.network_iterator import NetworkStatus
 from hummingbot.core.web_assistant.web_assistants_factory import WebAssistantsFactory
 from hummingbot.model.order_status import OrderStatus
-from hummingbot.connector.exchange.polkadex import polkadex_utils as p_utils
 
 
 def fee_levied_asset(side, base, quote):
@@ -464,7 +464,7 @@ class PolkadexExchange(ExchangePyBase):
         tasks = []
         async with Client(transport=transport, fetch_schema_from_transport=False) as session:
             print("Waiting for messages ...")
-            subscription = gql("""subscription WebsocketStreamsMessage($name: String!) {websocket_streams(name: "esoJUCwnKaNEBR7PTdeUrC3e5HKkMs3pdnPkyPqKEUfLS9uCV") {data}}""")
+            subscription = gql("""subscription WebsocketStreamsMessage($name: String!) {websocket_streams(name: "esmbkgGnS6ozLJxx7vQdjucwQHz4dPNuvj9xjZmfDpaqZH65p") {data}}""")
             print("Waiting for messages... ",subscription)
             async for result in session.subscribe(subscription,self.user_proxy_address):
                 print(result)

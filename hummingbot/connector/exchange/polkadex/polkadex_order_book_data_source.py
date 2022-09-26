@@ -1,13 +1,14 @@
 import asyncio
-from shutil import ExecError
-import time
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
 import json
+import logging
+import time
+from shutil import ExecError
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from gql import Client
 from gql.transport.appsync_websockets import AppSyncWebsocketsTransport
 
-from hummingbot.connector.exchange.polkadex import polkadex_constants as CONSTANTS
+from hummingbot.connector.exchange.polkadex import polkadex_constants as CONSTANTS, polkadex_utils as p_utils
 from hummingbot.connector.exchange.polkadex.graphql.general.streams import websocket_streams_session_provided
 from hummingbot.connector.exchange.polkadex.graphql.market.market import get_orderbook
 from hummingbot.connector.exchange.polkadex.polkadex_order_book import PolkadexOrderbook
@@ -15,7 +16,6 @@ from hummingbot.core.data_type.order_book_message import OrderBookMessage
 from hummingbot.core.data_type.order_book_tracker_data_source import OrderBookTrackerDataSource
 from hummingbot.core.web_assistant.web_assistants_factory import WebAssistantsFactory
 from hummingbot.core.web_assistant.ws_assistant import WSAssistant
-from hummingbot.connector.exchange.polkadex import polkadex_utils as p_utils
 
 if TYPE_CHECKING:
     from hummingbot.connector.exchange.polkadex.polkadex_exchange import PolkadexExchange
@@ -78,7 +78,7 @@ class PolkadexOrderbookDataSource(OrderBookTrackerDataSource):
         print("Listening for subscription Recent trade: ", message)
         new_message = {}
         new_message["data"] = []
-        message = message["data"]["websocket_streams"]["data"]
+        message = message["websocket_streams"]["data"]
         # message = message.literal_eval(message)
         print("new generated message: ",message)
         for change in message:
@@ -87,8 +87,10 @@ class PolkadexOrderbookDataSource(OrderBookTrackerDataSource):
             new_message["data"].append(change)
 
         new_message["market"] = trading_pair
-        print("new msg on trade: ", new_message)    
-        self._message_queue[self._trade_messages_queue_key].put_nowait(message)
+        print("new msg on trade: ", new_message)
+        # raise Exception("new msg on ob_inc: ", new_message)
+        print("Message Queue Length:", len(self._message_queue[self._trade_messages_queue_key]))
+        self._message_queue[self._trade_messages_queue_key].put_nowait(new_message)
 
     def on_ob_increment(self, message, trading_pair):
         # {  
@@ -112,24 +114,33 @@ class PolkadexOrderbookDataSource(OrderBookTrackerDataSource):
         new_message["id"] = message[0][3]
         new_message["market"] = trading_pair
         print("new msg on ob_inc: ", new_message)
-        raise Exception("new msg on ob_inc: ", new_message)
+        # raise Exception("new msg on ob_inc: ", new_message)
+        logging.info("Received Ob Increment Message", new_message)
+        print("Message Queue Length:", len(self._message_queue[self._diff_messages_queue_key]))
         self._message_queue[self._diff_messages_queue_key].put_nowait(new_message)
 
     async def listen_for_subscriptions(self):
+        logging.info("Listening for Subscriptions")
+        print("Listening for Subscriptions")
         transport = AppSyncWebsocketsTransport(url=self._connector.endpoint, auth=self._connector.auth)
         tasks = []
         async with Client(transport=transport, fetch_schema_from_transport=False) as session:
             for trading_pair in self._trading_pairs:
+                logging.info("Created Recent Trades task")
                 tasks.append(
                     asyncio.create_task(
-                        websocket_streams_session_provided(trasding_pair + "-recent-trades", session,
-                                                           self.on_recent_trade_callback, trading_pair)))
+                        websocket_streams_session_provided(trading_pair + "-recent-trades", session,
+                                                         self.on_recent_trade_callback, trading_pair)))
+                logging.info("Created Ob Increment task")
                 tasks.append(
                     asyncio.create_task(
                         websocket_streams_session_provided(trading_pair + "-ob-inc", session,
                                                            self.on_ob_increment, trading_pair)))
-            asyncio.wait(tasks)  
-            raise Exception("Coming out of for loop")     
+
+            if tasks:
+                print("Awaiting Task Completions")
+                logging.info("Await Tasks")
+                done, pending = await asyncio.wait(tasks)
 
     async def _subscribe_channels(self, ws: WSAssistant):
         pass
