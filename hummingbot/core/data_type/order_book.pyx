@@ -67,6 +67,7 @@ cdef class OrderBook(PubSub):
             OrderBookEntry top_bid
             OrderBookEntry top_ask
 
+        logging.info("Applying Diffs in Cython")
         # Apply the diffs. Diffs with 0 amounts mean deletion.
         for bid in bids:
             result = self._bid_book.find(bid)

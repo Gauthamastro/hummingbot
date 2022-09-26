@@ -264,6 +264,7 @@ class ClientOrderTracker:
 
     async def _process_order_update(self, order_update: OrderUpdate):
         print("(Main Code) _process_order_update exchange_order_id: ", order_update.exchange_order_id,"   order_id: ",order_update.client_order_id)
+        logging.info("Inside Process Order Update")
         if not order_update.client_order_id and not order_update.exchange_order_id:
             self.logger().error("OrderUpdate does not contain any client_order_id or exchange_order_id", exc_info=True)
             return
@@ -275,6 +276,7 @@ class ClientOrderTracker:
         if tracked_order:
             if order_update.new_state == OrderState.FILLED and not tracked_order.is_done:
                 try:
+                    logging.info("Waiting for tracked Order")
                     await asyncio.wait_for(
                         tracked_order.wait_until_completely_filled(),
                         timeout=self.TRADE_FILLS_WAIT_TIMEOUT)
