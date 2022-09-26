@@ -15,6 +15,19 @@ def create_cancel_order_req(runtime_config, order_id):
     print("order id for encoding ", order_id)
     return runtime_config.create_scale_object("H256").encode(order_id)
 
+''' pub client_order_id: ClientOrderId,
+    pub user: AccountId,
+    pub main_account: AccountId,
+    pub pair: String,
+    pub side: OrderSide,
+    pub order_type: OrderType,
+    pub quote_order_quantity: String,
+    // Quantity is defined in base asset
+    pub qty: String,
+    // Price is defined in quote asset per unit base asset
+    pub price: String,
+    pub timestamp: i64,
+'''
 
 def create_order(runtime_config, price: Decimal, qty: Decimal, order_type, order_id: str, side, proxy,main, base, quote, ts):
     cid = bytearray()
@@ -27,10 +40,7 @@ def create_order(runtime_config, price: Decimal, qty: Decimal, order_type, order
     order = {
         "user": proxy,
         "main_account":  main,
-        "pair": {
-            "base_asset": create_asset(base),
-            "quote_asset": create_asset(quote)
-        },
+        "pair": str(base)+"-"+str(quote),
         "qty": str(qty)[0:12],#[0:8],#ToDo: May fail
         "price": str(price)[0:12], #[0:8],#ToDo: May fail
         "quote_order_quantity": "0",

@@ -1,4 +1,5 @@
 import asyncio
+from shutil import ExecError
 import time
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 import json
@@ -111,6 +112,7 @@ class PolkadexOrderbookDataSource(OrderBookTrackerDataSource):
         new_message["id"] = message[0][3]
         new_message["market"] = trading_pair
         print("new msg on ob_inc: ", new_message)
+        raise Exception("new msg on ob_inc: ", new_message)
         self._message_queue[self._diff_messages_queue_key].put_nowait(new_message)
 
     async def listen_for_subscriptions(self):
@@ -120,13 +122,14 @@ class PolkadexOrderbookDataSource(OrderBookTrackerDataSource):
             for trading_pair in self._trading_pairs:
                 tasks.append(
                     asyncio.create_task(
-                        websocket_streams_session_provided(trading_pair + "-recent-trades", session,
+                        websocket_streams_session_provided(trasding_pair + "-recent-trades", session,
                                                            self.on_recent_trade_callback, trading_pair)))
                 tasks.append(
                     asyncio.create_task(
                         websocket_streams_session_provided(trading_pair + "-ob-inc", session,
                                                            self.on_ob_increment, trading_pair)))
-                await asyncio.wait(tasks)
+            asyncio.wait(tasks)  
+            raise Exception("Coming out of for loop")     
 
     async def _subscribe_channels(self, ws: WSAssistant):
         pass

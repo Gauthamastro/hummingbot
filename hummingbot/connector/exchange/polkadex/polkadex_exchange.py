@@ -99,7 +99,7 @@ class PolkadexExchange(ExchangePyBase):
                         ["client_order_id", "H256"],
                         ["user", "AccountId"],
                         ["main_account","AccountId"],
-                        ["pair", "TradingPair"],
+                        ["pair", "String"],
                         ["side", "OrderSide"],
                         ["order_type", "OrderType"],
                         ["quote_order_quantity", "String"],

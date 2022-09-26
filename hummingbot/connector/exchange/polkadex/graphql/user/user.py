@@ -37,6 +37,7 @@ async def place_order(params, url, proxy_addr):
             """
         )
         encoded_params = json.dumps({"PlaceOrder": params})
+        print("Encoded params", encoded_params)
 
         variables = {"input": {"payload": encoded_params}}
         
