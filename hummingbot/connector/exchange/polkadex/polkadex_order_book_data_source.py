@@ -42,9 +42,8 @@ class PolkadexOrderbookDataSource(OrderBookTrackerDataSource):
     async def _parse_trade_message(self, raw_message: Dict[str,Any],
                                    message_queue: asyncio.Queue):
         print("Raw message from trade subciption")
-        for msg in raw_message["websocket_streams"]["data"]:
-            trade_message = PolkadexOrderbook.trade_message_from_exchange(msg)
-            message_queue.put_nowait(trade_message)
+        trade_message = PolkadexOrderbook.trade_message_from_exchange(raw_message['data'][0])
+        message_queue.put_nowait(trade_message)
 
     async def _parse_order_book_diff_message(self, raw_message: Dict[str, Dict[str, List[Dict[str, str]]]],
                                              message_queue: asyncio.Queue):
@@ -56,7 +55,7 @@ class PolkadexOrderbookDataSource(OrderBookTrackerDataSource):
                }
         """
         diff_message = PolkadexOrderbook.diff_message_from_exchange(raw_message)
-        print("receive diff message putting it in queue: ",diff_message)
+        logging.info("Received Diff putting into queue")
         message_queue.put_nowait(diff_message)
 
     async def _order_book_snapshot(self, trading_pair: str) -> OrderBookMessage:
@@ -84,6 +83,9 @@ class PolkadexOrderbookDataSource(OrderBookTrackerDataSource):
         change["p"] = p_utils.parse_price_or_qty(message['p'])
         change["q"] = p_utils.parse_price_or_qty(message["q"])
         change["vq"] = p_utils.parse_price_or_qty(message["vq"])
+        change["t"] = p_utils.parse_price_or_qty(message["t"])
+        change["tid"] = p_utils.parse_price_or_qty(message["tid"])
+        change["m"] = trading_pair
         new_message["data"].append(change)
 
         print("Parsed trade: ", new_message)
@@ -146,3 +148,45 @@ class PolkadexOrderbookDataSource(OrderBookTrackerDataSource):
             exc_info=True
         )
         raise NotImplementedError
+
+    async def listen_for_order_book_diffs(self, ev_loop: asyncio.AbstractEventLoop, output: asyncio.Queue):
+        """
+        Reads the order diffs events queue. For each event creates a diff message instance and adds it to the
+        output queue
+
+        :param ev_loop: the event loop the method will run in
+        :param output: a queue to add the created diff messages
+        """
+        message_queue = self._message_queue[self._diff_messages_queue_key]
+        while True:
+            try:
+                diff_event = await message_queue.get()
+                print("Calling _parse_order_book_diff_message")
+                await self._parse_order_book_diff_message(raw_message=diff_event, message_queue=output)
+
+
+            except asyncio.CancelledError:
+                print("raised CancelledError")
+                raise
+            except Exception:
+                print("Raise Exception")
+                self.logger().exception("Unexpected error when processing public order book updates from exchange")
+
+    async def listen_for_trades(self, ev_loop: asyncio.AbstractEventLoop, output: asyncio.Queue):
+        """
+        Reads the trade events queue. For each event creates a trade message instance and adds it to the output queue
+
+        :param ev_loop: the event loop the method will run in
+        :param output: a queue to add the created trade messages
+        """
+        message_queue = self._message_queue[self._trade_messages_queue_key]
+        while True:
+            try:
+                trade_event = await message_queue.get()
+                # raise Exception(str(trade_event))
+                await self._parse_trade_message(raw_message=trade_event, message_queue=output)
+
+            except asyncio.CancelledError:
+                raise
+            except Exception:
+                self.logger().exception("Unexpected error when processing public trade updates from exchange")

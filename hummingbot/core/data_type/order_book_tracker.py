@@ -223,7 +223,8 @@ class OrderBookTracker():
                 last_message_timestamp = now
             except asyncio.CancelledError:
                 raise
-            except Exception:
+            except Exception as e:
+                raise e
                 self.logger().network(
                     "Unexpected error routing order book messages.",
                     exc_info=True,
@@ -261,7 +262,7 @@ class OrderBookTracker():
         while True:
             try:
                 saved_messages: Deque[OrderBookMessage] = self._saved_message_queues[trading_pair]
-
+                logging.info("Tracking Single Book")
                 # Process saved messages first if there are any
                 if len(saved_messages) > 0:
                     message = saved_messages.popleft()
@@ -285,7 +286,8 @@ class OrderBookTracker():
                     self.logger().debug(f"Processed order book snapshot for {trading_pair}.")
             except asyncio.CancelledError:
                 raise
-            except Exception:
+            except Exception as e:
+                raise e
                 self.logger().network(
                     f"Unexpected error tracking order book for {trading_pair}.",
                     exc_info=True,
@@ -308,14 +310,16 @@ class OrderBookTracker():
                     continue
 
                 order_book: OrderBook = self._order_books[trading_pair]
+                logging.info("Applying Trades")
                 order_book.apply_trade(OrderBookTradeEvent(
                     trading_pair=trade_message.trading_pair,
                     timestamp=trade_message.timestamp,
                     price=float(trade_message.content["price"]),
                     amount=float(trade_message.content["amount"]),
-                    type=TradeType.SELL if
-                    trade_message.content["trade_type"] == float(TradeType.SELL.value) else TradeType.BUY
+                    type=TradeType.SELL
                 ))
+
+                logging.info("Finished Applying Trades")
 
                 messages_accepted += 1
 
@@ -329,7 +333,8 @@ class OrderBookTracker():
                 last_message_timestamp = now
             except asyncio.CancelledError:
                 raise
-            except Exception:
+            except Exception as e:
+                raise e
                 self.logger().network(
                     "Unexpected error routing order book messages.",
                     exc_info=True,

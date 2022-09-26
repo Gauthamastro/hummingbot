@@ -109,7 +109,8 @@ class PolkadexOrderbook(OrderBook):
             var = OrderBookMessage(OrderBookMessageType.DIFF, {
                 "trading_pair": market,
                 "update_id": int(seq),
-                "asks": asks
+                "asks": asks,
+                "bids": []
             }, timestamp=time.time())
         elif bids:
             print("in bids")
@@ -117,12 +118,15 @@ class PolkadexOrderbook(OrderBook):
                 "trading_pair": market,
                 "update_id": int(seq),
                 "bids": bids,
+                "asks": []
             }, timestamp=time.time())
         else:
             print("not in both")
             var = OrderBookMessage(OrderBookMessageType.DIFF, {
                 "trading_pair": market,
                 "update_id": int(seq),
+                "bids": [],
+                "asks": []
             }, timestamp=time.time())
         print("Checking Parsing: ",var)
         return var
@@ -155,4 +159,4 @@ class PolkadexOrderbook(OrderBook):
             "update_id": ts,
             "price": p_utils.parse_price_or_qty(msg["p"]),
             "amount": p_utils.parse_price_or_qty(msg["q"]),
-        }, timestamp=ts * 1e-3)
+        }, timestamp=ts)
