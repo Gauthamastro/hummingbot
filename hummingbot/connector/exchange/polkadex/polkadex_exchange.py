@@ -1,6 +1,8 @@
 import asyncio
 import re
 import time
+import json
+
 from decimal import Decimal
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
@@ -351,21 +353,11 @@ class PolkadexExchange(ExchangePyBase):
         
         """
         print("Balance Update call: ",message)
-        message = message["data"]["websocket_streams"]["data"]
-        self.logger().info("Callback message : ",message)
-        print("Balance Callback message",message)
         asset_name = convert_asset_to_ticker(message["asset"])
-
-
         free_balance = p_utils.parse_price_or_qty(message["free"])
         total_balance = p_utils.parse_price_or_qty(message["free"]) + p_utils.parse_price_or_qty(message["reserved"])
-        print("free_balance: ",free_balance)
-        print("total_balance: ",total_balance)
-        
         self._account_available_balances[asset_name] = free_balance
-        print("Reached here 1")
         self._account_balances[asset_name] = total_balance
-        print("Reached here 2")
         print("Account Balance: ",self._account_available_balances[asset_name])
 
     #ToDo: Need to change set order parsing
@@ -391,11 +383,7 @@ class PolkadexExchange(ExchangePyBase):
         }
         """
         print(" --- Order Update Callback: ",message," ---\n")
-        message = message["data"]["websocket_streams"]["data"]
         market, base_asset, quote_asset = convert_pair_to_market(message["pair"])
-        print("trading pair", market)
-
-        # ts = parser.parse(message["time"]).timestamp()
         ts = time.time()
         tracked_order = self.in_flight_orders.get(message["client_order_id"])
         print("tracked_order: ",tracked_order)
@@ -429,28 +417,32 @@ class PolkadexExchange(ExchangePyBase):
                 fill_price=Decimal(message["avg_filled_price"]),
                 fill_timestamp=ts,
             )
+            print("Order Update: ",trade_update)
             self._order_tracker.process_trade_update(trade_update)
 
     async def _update_trading_fees(self):
         raise NotImplementedError
 
     #ToDo: If above two functions (balance/update) are change here 
-    def handle_websocket_message(self, message: Dict):
+    def handle_websocket_message(self, message, _value):
         """
-        {'data': {'websocket_streams': {
+        {
+            'websocket_streams': {
             'data': {'type': 'SetBalance', 
             'event_id': 0, 'user': '5C62Ck4UrFPiBtoCmeSrgF7x9yv9mn38446dhCpsi2mLHiFT',
              'asset': 'polkadex', 'free': 0, 'pending_withdrawal': 0, 'reserved': 0}
              }
-            }
+            
         }
         """
-    
-        print(" ---- New websocket message: ", message)
-        # self.logger().info("----- New websocket message: ", message)
-        if "SetBalance" in message["data"]["websocket_streams"]["data"]["type"]:
+        message = message["websocket_streams"]["data"]
+        print("Message recv: ", message)
+        message = json.loads(message)
+        print("Message in json: ", message["type"])
+
+        if "SetBalance" in message["type"]:
             self.balance_update_callback(message)
-        elif "Order" in message["data"]["websocket_streams"]["data"]["type"]:
+        elif "Order" in message["type"]:
             self.order_update_callback(message)
         else:
             print("Unknown message from user websocket stream")
@@ -463,24 +455,22 @@ class PolkadexExchange(ExchangePyBase):
         transport = AppSyncWebsocketsTransport(url=self.endpoint, auth=self.auth)
         tasks = []
         async with Client(transport=transport, fetch_schema_from_transport=False) as session:
-            print("Waiting for messages ...")
-            subscription = gql("""subscription WebsocketStreamsMessage($name: String!) {websocket_streams(name: "esmbkgGnS6ozLJxx7vQdjucwQHz4dPNuvj9xjZmfDpaqZH65p") {data}}""")
-            print("Waiting for messages... ",subscription)
-            async for result in session.subscribe(subscription,self.user_proxy_address):
-                print(result)
-                await self.handle_websocket_message(result)
-        await asyncio.wait(tasks)
+            tasks.append(
+                asyncio.create_task(
+                    websocket_streams_session_provided(self.user_main_address, session,
+                                                        self.handle_websocket_message
+                                                        )
+                    ))
+            tasks.append(
+                asyncio.create_task(
+                    websocket_streams_session_provided(self.user_proxy_address, session,
+                                                        self.handle_websocket_message
+                                                        )
+                    ))
 
-
-
-        # async with Client(transport=transport, fetch_schema_from_transport=False) as session:
-        #     tasks.append(
-        #         asyncio.create_task(
-        #             websocket_streams_session_provided(self.user_main_address, session,
-        #                                                self.handle_websocket_message()
-        #                                                )
-        #             ))#ToDo: Function requires an argument
-        #     await asyncio.wait(tasks)
+            await asyncio.wait(tasks)
+        # if tasks:
+        #     done, pending = await asyncio.wait(tasks)
 
     #ToDo: Trading rules parsing also needs to be change
     async def _format_trading_rules(self, exchange_info_dict: Dict[str, Any]) -> List[TradingRule]:
