@@ -259,8 +259,8 @@ class PolkadexExchange(ExchangePyBase):
                 return False
             try:
                 signature = self.proxy_pair.sign(encoded_cancel_req)
-                market = convert_ticker_to_enclave_trading_pair(tracked_order.trading_pair)
-                params = [tracked_order.exchange_order_id, self.user_proxy_address, market, {"Sr25519": signature.hex()}]
+                # market = convert_ticker_to_enclave_trading_pair(tracked_order.trading_pair)
+                params = [tracked_order.exchange_order_id, self.user_proxy_address, tracked_order.trading_pair, {"Sr25519": signature.hex()}]
             except Exception as e:
                 print("Couldn't sign cancel request: ",e)
                 # raise Exception("Couldn't sign cancel request")
