@@ -73,23 +73,21 @@ class PolkadexOrderbookDataSource(OrderBookTrackerDataSource):
         return snapshot_msg
 
     def on_recent_trade_callback(self, message, trading_pair):
-        #{"type":"TradeFormat","m":"PDEX-1","p":"6.565","q":"3","tid":"1824","t":1663934631939,"sid":"106"}
-
+        # Expected structure
+        # {'type': 'TradeFormat', 'm': 'PDEX-3', 'p': '2', 'vq': '20', 'q': '10', 'tid': '111', 't': 1664193952989, 'sid': '16'}
         print("Listening for subscription Recent trade: ", message)
         new_message = {}
         new_message["data"] = []
         message = message["websocket_streams"]["data"]
-        # message = message.literal_eval(message)
-        print("new generated message: ",message)
-        for change in message:
-            change["p"] = p_utils.parse_price_or_qty(change["p"])
-            change["q"] = p_utils.parse_price_or_qty(change["q"])
-            new_message["data"].append(change)
+        message = json.loads(message)
+        change = {}
+        change["p"] = p_utils.parse_price_or_qty(message['p'])
+        change["q"] = p_utils.parse_price_or_qty(message["q"])
+        change["vq"] = p_utils.parse_price_or_qty(message["vq"])
+        new_message["data"].append(change)
 
-        new_message["market"] = trading_pair
-        print("new msg on trade: ", new_message)
-        # raise Exception("new msg on ob_inc: ", new_message)
-        print("Message Queue Length:", len(self._message_queue[self._trade_messages_queue_key]))
+        print("Parsed trade: ", new_message)
+        # {'data': [{'p': Decimal('5'), 'q': Decimal('0.60'), 'vq': Decimal('3.00')}]}
         self._message_queue[self._trade_messages_queue_key].put_nowait(new_message)
 
     def on_ob_increment(self, message, trading_pair):
@@ -103,20 +101,14 @@ class PolkadexOrderbookDataSource(OrderBookTrackerDataSource):
         message = message["websocket_streams"]["data"]
         message = json.loads(message)
         message = message["changes"]
-        print("message: ",message[0][0])
-        print("message: ",message[0][1])
-        print("message: ",message[0][2])
-        print("message: ",message[0][3])
         new_message = {}
         new_message["side"] = message[0][0]
         new_message["price"] = message[0][1]
         new_message["qty"] = message[0][2]
         new_message["id"] = message[0][3]
         new_message["market"] = trading_pair
-        print("new msg on ob_inc: ", new_message)
-        # raise Exception("new msg on ob_inc: ", new_message)
-        logging.info("Received Ob Increment Message", new_message)
-        print("Message Queue Length:", len(self._message_queue[self._diff_messages_queue_key]))
+        print("Parsed ob_inc: ", new_message)
+        # {'side': 'Ask', 'price': '2', 'qty': '10', 'id': 309, 'market': 'PDEX-3'}
         self._message_queue[self._diff_messages_queue_key].put_nowait(new_message)
 
     async def listen_for_subscriptions(self):
