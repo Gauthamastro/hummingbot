@@ -1,0 +1,250 @@
+########################################################
+###       Pure market making strategy config         ###
+########################################################
+
+template_version: 24
+strategy: pure_market_making
+
+# Exchange and token parameters.
+exchange: polkadex
+
+# Token trading pair for the exchange, e.g. BTC-USDT
+market: PDEX-45
+
+# How far away from mid price to place the bid order.
+# Spread of 1 = 1% away from mid price at that time.
+# Example if mid price is 100 and bid_spread is 1.
+# Your bid is placed at 99.
+bid_spread: 1.0
+
+# How far away from mid price to place the ask order.
+# Spread of 1 = 1% away from mid price at that time.
+# Example if mid price is 100 and ask_spread is 1.
+# Your bid is placed at 101.
+ask_spread: 1.0
+
+# Minimum Spread
+# How far away from the mid price to cancel active orders
+minimum_spread: -100.0
+
+# Time in seconds before cancelling and placing new orders.
+# If the value is 60, the bot cancels active orders and placing new ones after a minute.
+order_refresh_time: 10.0
+
+# Time in seconds before replacing existing order with new orders at the same price.
+max_order_age: 1800.0
+
+# The spread (from mid price) to defer order refresh process to the next cycle.
+# (Enter 1 to indicate 1%), value below 0, e.g. -1, is to disable this feature - not recommended.
+order_refresh_tolerance_pct: 0.0
+
+# Size of your bid and ask order.
+order_amount: 0.1
+
+# Price band ceiling.
+price_ceiling: -1.0
+
+# Price band floor.
+price_floor: -1.0
+
+# enable moving price floor and ceiling.
+moving_price_band_enabled: false
+
+# Price band ceiling pct.
+price_ceiling_pct: 1.0
+
+# Price band floor pct.
+price_floor_pct: -1.0
+
+# price_band_refresh_time.
+price_band_refresh_time: 86400
+
+# Whether to alternate between buys and sells (true/false).
+ping_pong_enabled: false
+
+# Whether to enable Inventory skew feature (true/false).
+inventory_skew_enabled: false
+
+# Target base asset inventory percentage target to be maintained (for Inventory skew feature).
+inventory_target_base_pct: 50.0
+
+# The range around the inventory target base percent to maintain, expressed in multiples of total order size (for
+# inventory skew feature).
+inventory_range_multiplier: 1.0
+
+# Initial price of the base asset. Note: this setting is not affects anything, the price is kept in the database.
+inventory_price: 1.0
+
+# Number of levels of orders to place on each side of the order book.
+order_levels: 1
+
+# Increase or decrease size of consecutive orders after the first order (if order_levels > 1).
+order_level_amount: 0
+
+# Order price space between orders (if order_levels > 1).
+order_level_spread: 1.0
+
+# How long to wait before placing the next order in case your order gets filled.
+filled_order_delay: 60
+
+# Whether to stop cancellations of orders on the other side (of the order book),
+# when one side is filled (hanging orders feature) (true/false).
+hanging_orders_enabled: false
+
+# Spread (from mid price, in percentage) hanging orders will be canceled (Enter 1 to indicate 1%)
+hanging_orders_cancel_pct: 10.0
+
+# Whether to enable order optimization mode (true/false).
+order_optimization_enabled: false
+
+# The depth in base asset amount to be used for finding top ask (for order optimization mode).
+ask_order_optimization_depth: 0
+
+# The depth in base asset amount to be used for finding top bid (for order optimization mode).
+bid_order_optimization_depth: 0
+
+# Whether to enable adding transaction costs to order price calculation (true/false).
+add_transaction_costs: false
+
+# The price source (current_market/external_market/custom_api).
+price_source: current_market
+
+# The price type (mid_price/last_price/last_own_trade_price/best_bid/best_ask/inventory_cost).
+price_type: mid_price
+
+# An external exchange name (for external exchange pricing source).
+price_source_exchange:
+
+# A trading pair for the external exchange, e.g. BTC-USDT (for external exchange pricing source).
+price_source_market:
+
+# An external api that returns price (for custom_api pricing source).
+price_source_custom_api:
+
+# An interval time in second to update the price from custom api (for custom_api pricing source).
+custom_api_update_interval: 5.0
+
+#Take order if they cross order book when external price source is enabled
+take_if_crossed:
+
+# Use user provided orders to directly override the orders placed by order_amount and order_level_parameter
+# This is an advanced feature and user is expected to directly edit this field in config file
+# Below is an sample input, the format is a dictionary, the key is user-defined order name, the value is a list which includes buy/sell, order spread, and order amount
+# order_override:
+#   order_1: [buy, 0.5, 100]
+#   order_2: [buy, 0.75, 200]
+#   order_3: [sell, 0.1, 500]
+# Please make sure there is a space between : and [
+order_override:
+  order_1: [ buy, 0.5, 1 ]
+  order_2: [ buy, 0.75, 1 ]
+  order_3: [ sell, 0.2, 2 ]
+  order_4: [ buy, 0.5, 1 ]
+  order_5: [ buy, 0.75, 1 ]
+  order_6: [ sell, 0.2, 2 ]
+  order_7: [ buy, 0.5, 1 ]
+  order_8: [ buy, 0.75, 1 ]
+  order_9: [ sell, 0.2, 2 ]
+  order_10: [ buy, 0.5, 1 ]
+  order_11: [ buy, 0.75, 1 ]
+  order_12: [ sell, 0.2, 2 ]
+  order_13: [ buy, 0.5, 1 ]
+  order_14: [ buy, 0.75, 1 ]
+  order_15: [ sell, 0.2, 2 ]
+  order_16: [ buy, 0.5, 1 ]
+  order_17: [ buy, 0.75, 1 ]
+  order_18: [ sell, 0.2, 2 ]
+  order_19: [ buy, 0.5, 1 ]
+  order_20: [ buy, 0.75, 1 ]
+  order_21: [ sell, 0.2, 2 ]
+  order_22: [ buy, 0.5, 1 ]
+  order_23: [ buy, 0.75, 1 ]
+  order_24: [ sell, 0.2, 2 ]
+  order_25: [ buy, 0.5, 1 ]
+  order_26: [ buy, 0.75, 1 ]
+  order_27: [ sell, 0.2, 2 ]
+  order_28: [ buy, 0.5, 1 ]
+  order_29: [ buy, 0.75, 1 ]
+  order_30: [ sell, 0.2, 2 ]
+  order_31: [ buy, 0.5, 1 ]
+  order_32: [ buy, 0.75, 1 ]
+  order_33: [ sell, 0.2, 2 ]
+  order_34: [ buy, 0.5, 1 ]
+  order_35: [ buy, 0.75, 1 ]
+  order_36: [ sell, 0.2, 2 ]
+  order_37: [ buy, 0.5, 1 ]
+  order_38: [ buy, 0.75, 1 ]
+  order_39: [ sell, 0.2, 2 ]
+  order_40: [ buy, 0.5, 1 ]
+  order_41: [ buy, 0.75, 1 ]
+  order_42: [ sell, 0.2, 2 ]
+  order_43: [ buy, 0.5, 1 ]
+  order_44: [ buy, 0.75, 1 ]
+  order_45: [ sell, 0.2, 2 ]
+  order_46: [ buy, 0.5, 1 ]
+  order_47: [ buy, 0.75, 1 ]
+  order_48: [ sell, 0.2, 2 ]
+  order_49: [ buy, 0.5, 1 ]
+  order_50: [ buy, 0.75, 1 ]
+  order_51: [ sell, 0.2, 2 ]
+  order_52: [ buy, 0.5, 1 ]
+  order_53: [ buy, 0.75, 1 ]
+  order_54: [ sell, 0.2, 2 ]
+  order_55: [ buy, 0.5, 1 ]
+  order_56: [ buy, 0.75, 1 ]
+  order_57: [ sell, 0.2, 2 ]
+  order_58: [ buy, 0.5, 1 ]
+  order_59: [ buy, 0.75, 1 ]
+  order_60: [ sell, 0.2, 2 ]
+  order_61: [ buy, 0.5, 1 ]
+  order_62: [ buy, 0.75, 1 ]
+  order_63: [ sell, 0.2, 2 ]
+  order_64: [ buy, 0.5, 1 ]
+  order_65: [ buy, 0.75, 1 ]
+  order_66: [ sell, 0.2, 2 ]
+  order_67: [ buy, 0.5, 1 ]
+  order_68: [ buy, 0.75, 1 ]
+  order_69: [ sell, 0.2, 2 ]
+  order_70: [ buy, 0.5, 1 ]
+  order_71: [ buy, 0.75, 1 ]
+  order_72: [ sell, 0.2, 2 ]
+  order_73: [ buy, 0.5, 1 ]
+  order_74: [ buy, 0.75, 1 ]
+  order_75: [ sell, 0.2, 2 ]
+  order_76: [ buy, 0.5, 1 ]
+  order_77: [ buy, 0.75, 1 ]
+  order_78: [ sell, 0.2, 2 ]
+  order_79: [ buy, 0.5, 1 ]
+  order_80: [ buy, 0.75, 1 ]
+  order_81: [ sell, 0.2, 2 ]
+  order_82: [ buy, 0.5, 1 ]
+  order_83: [ buy, 0.75, 1 ]
+  order_84: [ sell, 0.2, 2 ]
+  order_85: [ buy, 0.5, 1 ]
+  order_86: [ buy, 0.75, 1 ]
+  order_87: [ sell, 0.2, 2 ]
+  order_88: [ buy, 0.5, 1 ]
+  order_89: [ buy, 0.75, 1 ]
+  order_90: [ sell, 0.2, 2 ]
+  order_91: [ buy, 0.5, 1 ]
+  order_92: [ buy, 0.75, 1 ]
+  order_93: [ sell, 0.2, 2 ]
+  order_94: [ buy, 0.5, 1 ]
+  order_95: [ buy, 0.75, 1 ]
+  order_96: [ sell, 0.2, 2 ]
+  order_97: [ buy, 0.5, 1 ]
+  order_98: [ buy, 0.75, 1 ]
+  order_99: [ sell, 0.2, 2 ]
+  order_100: [ buy, 0.5, 1 ]
+
+# Simpler override config for seperate bid and order level spreads
+split_order_levels_enabled: false
+bid_order_level_spreads:
+ask_order_level_spreads:
+bid_order_level_amounts:
+ask_order_level_amounts:
+# If the strategy should wait to receive cancellations confirmation before creating new orders during refresh time
+should_wait_order_cancel_confirmation: true
+
+# For more detailed information, see:
+# https://docs.hummingbot.io/strategies/pure-market-making/#configuration-parameters
