@@ -13,13 +13,13 @@ async def cancel_order(params, url, proxy_addr):
     }
         """
     )
-    print("params: ", params)
+    # print("params: ", params)
     encoded_params = json.dumps({"CancelOrder": params});
     variables = {"input": {"payload": encoded_params}}
     try:
         result = await execute_query_command(mutation, variables, url, proxy_addr)
-        print("Cancel order result: ", result)
-        print("After formatting cancel order: ",result["cancel_order"])
+        # print("Cancel order result: ", result)
+        # print("After formatting cancel order: ",result["cancel_order"])
         return result["cancel_order"]
     except TransportQueryError as executionErr:
         print("Error while cancelling orders: ", executionErr.errors)
@@ -27,7 +27,7 @@ async def cancel_order(params, url, proxy_addr):
 
 
 async def place_order(params, url, proxy_addr):
-    print("Inside graphQl place order")
+    # print("Inside graphQl place order")
     try:
         mutation = gql(
             """
@@ -37,14 +37,14 @@ async def place_order(params, url, proxy_addr):
             """
         )
         encoded_params = json.dumps({"PlaceOrder": params})
-        print("Encoded params", encoded_params)
+        # print("Encoded params", encoded_params)
 
         variables = {"input": {"payload": encoded_params}}
         
-        print("execute_query_command called")
+        # print("execute_query_command called")
         result = await execute_query_command(mutation, variables, url, proxy_addr)
-        print("Place order result: ", result)
-        print("After formatting cancel order: ",result["place_order"])
+        # print("Place order result: ", result)
+        # print("After formatting cancel order: ",result["place_order"])
 
         return result["place_order"]
     except Exception as err:
@@ -100,7 +100,7 @@ query findOrderByMainAccount($main: String!, $market: String!, $order_id: String
     return result["findOrderByMainAccount"]
 
 async def get_main_acc_from_proxy_acc(proxy, endpoint, proxy_addr):
-    print("inside get_main_acc_from_proxy_acc query")
+    # print("inside get_main_acc_from_proxy_acc query")
     query = gql(
         """
 query findUserByProxyAccount($proxy_account: String!) {
@@ -112,8 +112,8 @@ query findUserByProxyAccount($proxy_account: String!) {
     variables = {"proxy_account": proxy}
 
     result = await execute_query_command(query, variables, endpoint, proxy_addr)
-    print("result: ",result)
+    # print("result: ",result)
     main = result["findUserByProxyAccount"]["items"][0].split(",")[2][11:-1]
-    print("FindUser by proxy result: ", main)
+    # print("FindUser by proxy result: ", main)
     # TODO: Handle error if main account not found
     return main

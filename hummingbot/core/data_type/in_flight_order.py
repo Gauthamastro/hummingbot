@@ -316,18 +316,18 @@ class InFlightOrder:
     exchange_order_id: Optional[str] = None
     misc_updates: Optional[Dict[str, Any]] = None
         """
-        print("Calls Our API to get order update()")
-        print("--- Order Update State---\nexchange_order_id: ",order_update.exchange_order_id,"  update_timestamp: ",order_update.update_timestamp,"   new_state: ",order_update.new_state)
-        print("--- Current order state: ",self.current_state," ---")
+        # print("Calls Our API to get order update()")
+        # print("--- Order Update State---\nexchange_order_id: ",order_update.exchange_order_id,"  update_timestamp: ",order_update.update_timestamp,"   new_state: ",order_update.new_state)
+        # print("--- Current order state: ",self.current_state," ---")
         if (order_update.client_order_id != self.client_order_id
                 and order_update.exchange_order_id != self.exchange_order_id):
             return False
 
         prev_data = (self.exchange_order_id, self.current_state)
-        print("Exhange id: ",self.exchange_order_id)
+        # print("Exhange id: ",self.exchange_order_id)
         if self.exchange_order_id is None:
             self.update_exchange_order_id(order_update.exchange_order_id)
-        print("Exhange id: ",self.exchange_order_id)
+        # print("Exhange id: ",self.exchange_order_id)
 
         self.current_state = order_update.new_state
 

@@ -15,7 +15,7 @@ class PolkadexOrderbook(OrderBook):
 
     @classmethod
     def snapshot_message_from_exchange(cls, msgs: List[Dict[str, any]], timestamp: float, metadata) -> OrderBookMessage:
-        print("Snapshot called")
+        # print("Snapshot called")
 
         """
         Creates a snapshot message with the order book snapshot message
@@ -42,14 +42,14 @@ class PolkadexOrderbook(OrderBook):
 
         bids = []
         asks = []
-        print("Recvd snapshot msgs: ", msgs)
+        # print("Recvd snapshot msgs: ", msgs)
         for price_level in msgs:
             if price_level["s"] == "Bid":
                 bids.append((p_utils.parse_price_or_qty(price_level["p"]), p_utils.parse_price_or_qty(price_level["q"]), int(-1)))
             else:
                 asks.append((p_utils.parse_price_or_qty(price_level["p"]), p_utils.parse_price_or_qty(price_level["q"]), int(-1)))
 
-        print("(snapshot)bids: ",bids,"\n(snapshot)asks: ",asks)
+        # print("(snapshot)bids: ",bids,"\n(snapshot)asks: ",asks)
         return OrderBookMessage(OrderBookMessageType.SNAPSHOT, {
             "trading_pair": metadata["trading_pair"],
             "bids": bids,
@@ -57,7 +57,6 @@ class PolkadexOrderbook(OrderBook):
             "update_id": -1
         }, timestamp=timestamp)
 
-    #Todo: not working
     @classmethod
     def diff_message_from_exchange(cls,
                                    msg: Dict[str, any],
@@ -73,14 +72,11 @@ class PolkadexOrderbook(OrderBook):
         Expected data structure
         {'side': 'Ask', 'price': '11.11', 'qty': '10.1', 'id': 263, 'market': 'PDEX-1'}
         """
-        print("Diff message recv from exchange, ",msg)
         if metadata:
             msg.update(metadata)
-        print("IV: ",msg)
+
         market = msg["market"]
-        print("Input msgs: ", msg)
-        print("Changed: ", msg)
-        
+        # What does this signify
         if msg["qty"] == '0':
             msg["price"] = '0'
 
@@ -93,11 +89,7 @@ class PolkadexOrderbook(OrderBook):
         else:
             bids.append((p_utils.parse_price_or_qty(msg["price"]), p_utils.parse_price_or_qty(msg["qty"]), float(msg["id"])))
             seq = float(msg["id"])
-        print("(diff_message_from_exchange)bids: ",bids,"\n(diff_message_from_exchange)asks: ",asks)
-        # timestamp = time.time()
-        # convert ask and bid payload
         if bids and asks:
-            print("in bids and asks")
             var = OrderBookMessage(OrderBookMessageType.DIFF, {
                 "trading_pair": market,
                 "update_id": int(seq),
@@ -105,7 +97,6 @@ class PolkadexOrderbook(OrderBook):
                 "asks": asks
             }, timestamp=time.time())
         elif asks:
-            print("in asks")
             var = OrderBookMessage(OrderBookMessageType.DIFF, {
                 "trading_pair": market,
                 "update_id": int(seq),
@@ -113,7 +104,6 @@ class PolkadexOrderbook(OrderBook):
                 "bids": []
             }, timestamp=time.time())
         elif bids:
-            print("in bids")
             var = OrderBookMessage(OrderBookMessageType.DIFF, {
                 "trading_pair": market,
                 "update_id": int(seq),
@@ -121,14 +111,12 @@ class PolkadexOrderbook(OrderBook):
                 "asks": []
             }, timestamp=time.time())
         else:
-            print("not in both")
             var = OrderBookMessage(OrderBookMessageType.DIFF, {
                 "trading_pair": market,
                 "update_id": int(seq),
                 "bids": [],
                 "asks": []
             }, timestamp=time.time())
-        print("Checking Parsing: ",var)
         return var
 
     @classmethod
@@ -138,25 +126,18 @@ class PolkadexOrderbook(OrderBook):
         :param msg: the trade event details sent by the exchange
         :param metadata: a dictionary with extra information to add to trade message
         :return: a trade message with the details of the trade as provided by the exchange
-
-
-
-        expected data structure
-
-        { ["Ask",5.554500000000,7.999200000000,HBOTBPX221825c769eb1f581587e1bb1v ,"seq":20]}
         """
-        print("Trade message from exchange: ", msg)
-        # msg = msg["websocket_streams"]["data"]
+
         if metadata:
             msg.update(metadata)
-        print("Public trade message: ", msg)
 
+        # TODO can we directly set it
         ts = msg["t"]
 
         return OrderBookMessage(OrderBookMessageType.TRADE, {
             "trading_pair": msg["m"],
             "trade_id": msg["tid"],
-            "update_id": ts,
+            "update_id": msg["t"],
             "price": p_utils.parse_price_or_qty(msg["p"]),
             "amount": p_utils.parse_price_or_qty(msg["q"]),
         }, timestamp=ts)

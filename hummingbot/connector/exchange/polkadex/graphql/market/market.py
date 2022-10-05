@@ -53,12 +53,12 @@ async def get_orderbook(market, limit, next_token, endpoint, proxy_addr):
         variables["nextToken"] = next_token
 
     result = await execute_query_command(query, variables, endpoint, proxy_addr)
-    print("get Orderbook query result",result)
+    # print("get Orderbook query result",result)
     return result["getOrderbook"]["items"]
 
 
 async def get_all_markets(endpoint, proxy_addr):
-    print("inside get_all_markets")
+    # print("inside get_all_markets")
     query = gql(
         """
   query MyQuery {
@@ -80,12 +80,12 @@ async def get_all_markets(endpoint, proxy_addr):
     variables = {}
 
     result = await execute_query_command(query, variables, endpoint, proxy_addr)
-    print("Result pf get all markets: ",result)
+    # print("Result pf get all markets: ",result)
     return result["getAllMarkets"]["items"]
 
 
 async def get_all_market_tickers():
-    print("inside get_all_market_tickers")
+    # print("inside get_all_market_tickers")
     query = gql(
         """
 query getAllMarketTickers {
@@ -113,7 +113,7 @@ query getAllMarketTickers {
 
 
 async def get_all_assets(limit, next_token):
-    print("inside get_all_assets")
+    # print("inside get_all_assets")
     query = gql(
         """
 query getAllAssets($nextToken: String, $limit: Int) {

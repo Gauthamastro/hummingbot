@@ -41,7 +41,7 @@ class PolkadexOrderbookDataSource(OrderBookTrackerDataSource):
 
     async def _parse_trade_message(self, raw_message: Dict[str,Any],
                                    message_queue: asyncio.Queue):
-        print("Raw message from trade subciption")
+        # print("Raw message from trade subciption")
         trade_message = PolkadexOrderbook.trade_message_from_exchange(raw_message['data'][0])
         message_queue.put_nowait(trade_message)
 
@@ -59,7 +59,7 @@ class PolkadexOrderbookDataSource(OrderBookTrackerDataSource):
         message_queue.put_nowait(diff_message)
 
     async def _order_book_snapshot(self, trading_pair: str) -> OrderBookMessage:
-        print("Getting orderbook snapshot for: ", trading_pair)
+        # print("Getting orderbook snapshot for: ", trading_pair)
         #result = dynamoDB
         result: List[Dict[str, Any]] = await get_orderbook(trading_pair, None, None, self._connector.host,
                                                            self._connector.user_proxy_address)
@@ -74,7 +74,7 @@ class PolkadexOrderbookDataSource(OrderBookTrackerDataSource):
     def on_recent_trade_callback(self, message, trading_pair):
         # Expected structure
         # {'type': 'TradeFormat', 'm': 'PDEX-3', 'p': '2', 'vq': '20', 'q': '10', 'tid': '111', 't': 1664193952989, 'sid': '16'}
-        print("Listening for subscription Recent trade: ", message)
+        # print("Listening for subscription Recent trade: ", message)
         new_message = {}
         new_message["data"] = []
         message = message["websocket_streams"]["data"]
@@ -88,7 +88,7 @@ class PolkadexOrderbookDataSource(OrderBookTrackerDataSource):
         change["m"] = trading_pair
         new_message["data"].append(change)
 
-        print("Parsed trade: ", new_message)
+        # print("Parsed trade: ", new_message)
         # {'data': [{'p': Decimal('5'), 'q': Decimal('0.60'), 'vq': Decimal('3.00')}]}
         self._message_queue[self._trade_messages_queue_key].put_nowait(new_message)
 
@@ -99,7 +99,7 @@ class PolkadexOrderbookDataSource(OrderBookTrackerDataSource):
         #         '{"type":"IncOB","changes":[["Ask","3","2",123]]}'
         #       }
         #     }
-        print("Listening for subscription  ob increment: ", message)
+        # print("Listening for subscription  ob increment: ", message)
         message = message["websocket_streams"]["data"]
         message = json.loads(message)
         message = message["changes"]
@@ -132,8 +132,6 @@ class PolkadexOrderbookDataSource(OrderBookTrackerDataSource):
                                                            self.on_ob_increment, trading_pair)))
 
             if tasks:
-                print("Awaiting Task Completions")
-                logging.info("Await Tasks")
                 done, pending = await asyncio.wait(tasks)
 
     async def _subscribe_channels(self, ws: WSAssistant):
@@ -166,7 +164,6 @@ class PolkadexOrderbookDataSource(OrderBookTrackerDataSource):
 
 
             except asyncio.CancelledError:
-                print("raised CancelledError")
                 raise
             except Exception:
                 print("Raise Exception")
