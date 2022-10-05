@@ -47,6 +47,4 @@ def convert_ticker_to_enclave_trading_pair(market):
     return pair
 
 def parse_price_or_qty(value):
-    # print("var type: ",type(value))
-    # print("value: ",value)
     return Decimal(value)

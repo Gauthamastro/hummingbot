@@ -368,7 +368,6 @@ class ExchangePyBase(ExchangeBase, ABC):
 
         :return: the client id of the order to cancel
         """
-        print("Cancel Single Order id: ",order_id)
         safe_ensure_future(self._execute_cancel(trading_pair, order_id))
         return order_id
 
@@ -380,7 +379,6 @@ class ExchangePyBase(ExchangeBase, ABC):
 
         :return: a list of CancellationResult instances, one for each of the orders to be cancelled
         """
-        print("Cancelling all orders")
         incomplete_orders = [o for o in self.in_flight_orders.values() if not o.is_done]
         tasks = [self._execute_cancel(o.trading_pair, o.client_order_id) for o in incomplete_orders]
         order_id_set = set([o.client_order_id for o in incomplete_orders])
@@ -422,7 +420,6 @@ class ExchangePyBase(ExchangeBase, ABC):
         :param order_type: the type of order to create (MARKET, LIMIT, LIMIT_MAKER)
         :param price: the order price
         """
-        print("--- _create_order ---")
         exchange_order_id = ""
         trading_rule = self._trading_rules[trading_pair]
 
@@ -432,7 +429,6 @@ class ExchangePyBase(ExchangeBase, ABC):
             amount = self.quantize_order_amount(trading_pair=trading_pair, amount=amount, price=quantize_amount_price)
         else:
             amount = self.quantize_order_amount(trading_pair=trading_pair, amount=amount)
-        print("(Main Code) Create order, id: ",order_id)
         self.start_tracking_order(
             order_id=order_id,
             exchange_order_id=None,
@@ -467,7 +463,6 @@ class ExchangePyBase(ExchangeBase, ABC):
                 trade_type=trade_type,
                 order_type=order_type,
                 price=price)
-            print("(Main Code) Create order Receive exchange_order_id: ",exchange_order_id,"   update_timestamp: ",update_timestamp)
             order_update: OrderUpdate = OrderUpdate(
                 client_order_id=order_id,
                 exchange_order_id=exchange_order_id,
@@ -475,7 +470,6 @@ class ExchangePyBase(ExchangeBase, ABC):
                 update_timestamp=update_timestamp,
                 new_state=OrderState.OPEN,
             )
-            print("(Main Code) Create order Order Updated to open id:",order_update.client_order_id)
             self._order_tracker.process_order_update(order_update)
 
         except asyncio.CancelledError:
@@ -498,7 +492,6 @@ class ExchangePyBase(ExchangeBase, ABC):
             update_timestamp=self.current_timestamp,
             new_state=OrderState.FAILED,
         )
-        print("(Main Code) Order Failed")
         self._order_tracker.process_order_update(order_update)
 
     async def _execute_cancel(self, trading_pair: str, order_id: str) -> str:
@@ -508,15 +501,10 @@ class ExchangePyBase(ExchangeBase, ABC):
         :param trading_pair: the trading pair the order to cancel operates with
         :param order_id: the client id of the order to cancel
         """
-        print("(Main Code) Cancelling Active Order Executing id: ",order_id)
         tracked_order = self._order_tracker.fetch_tracked_order(order_id)
-        print("(Main Code) Tracked Order: ",tracked_order)
         if tracked_order is not None:
             try:
-                print("--- Before Cancel ---\nexchange_order_id: ",tracked_order.exchange_order_id,"    client_order_id: ",tracked_order.client_order_id,"    creation_timestamp: ",tracked_order.creation_timestamp, "    current_state: ",tracked_order.current_state)
                 cancelled = await self._place_cancel(order_id, tracked_order)
-                print("(Main Code) Got result from exchange for cancel (true/false): ",cancelled)
-                print("--- After Cancel ---\nexchange_order_id: ",tracked_order.exchange_order_id,"    client_order_id: ",tracked_order.client_order_id,"    creation_timestamp: ",tracked_order.creation_timestamp, "    current_state: ",tracked_order.current_state)
                 if cancelled:
                     order_update: OrderUpdate = OrderUpdate(
                         client_order_id=order_id,
@@ -793,9 +781,7 @@ class ExchangePyBase(ExchangeBase, ABC):
     # === Exchange / Trading logic methods that call the API ===
 
     async def _update_trading_rules(self):
-        print("(Main Code Call _update_trading_rules")
         exchange_info = await self._api_get(path_url=self.trading_rules_request_path)
-        print("exchange_info: ",exchange_info)
         trading_rules_list = await self._format_trading_rules(exchange_info)
         self._trading_rules.clear()
         for trading_rule in trading_rules_list:

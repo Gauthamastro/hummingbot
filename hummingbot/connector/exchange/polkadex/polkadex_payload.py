@@ -12,7 +12,6 @@ def create_asset(asset):
 
 
 def create_cancel_order_req(runtime_config, order_id):
-    print("order id for encoding ", order_id)
     return runtime_config.create_scale_object("H256").encode(order_id)
 
 def create_order(runtime_config, price: Decimal, qty: Decimal, order_type, order_id: str, side, proxy,main, base, quote, ts):
@@ -21,8 +20,6 @@ def create_order(runtime_config, price: Decimal, qty: Decimal, order_type, order
     cid = "0x" + bytes(cid).hex()   
     price = round(price,4)
     qty = round(qty,4)
-    # print("qty: ",str(qty))
-    # print("price: ",str(price))
     order = {
         "user": proxy,
         "main_account":  main,
@@ -49,5 +46,4 @@ def create_order(runtime_config, price: Decimal, qty: Decimal, order_type, order
         print("Unsupported Order side")
         raise Exception
 
-    # print(order)
     return runtime_config.create_scale_object("OrderPayload").encode(order), order

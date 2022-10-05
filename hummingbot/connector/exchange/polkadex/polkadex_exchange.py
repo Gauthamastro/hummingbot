@@ -397,7 +397,7 @@ class PolkadexExchange(ExchangePyBase):
         elif "Order" in message["type"]:
             self.order_update_callback(message)
         else:
-            print("Unknown message from user websocket stream")
+            pass
 
     async def _user_stream_event_listener(self):
         if self.user_main_address is None:

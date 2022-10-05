@@ -262,7 +262,6 @@ class OrderBookTracker():
         while True:
             try:
                 saved_messages: Deque[OrderBookMessage] = self._saved_message_queues[trading_pair]
-                logging.info("Tracking Single Book")
                 # Process saved messages first if there are any
                 if len(saved_messages) > 0:
                     message = saved_messages.popleft()
@@ -310,7 +309,6 @@ class OrderBookTracker():
                     continue
 
                 order_book: OrderBook = self._order_books[trading_pair]
-                logging.info("Applying Trades")
                 order_book.apply_trade(OrderBookTradeEvent(
                     trading_pair=trade_message.trading_pair,
                     timestamp=trade_message.timestamp,
@@ -319,7 +317,6 @@ class OrderBookTracker():
                     type=TradeType.SELL
                 ))
 
-                logging.info("Finished Applying Trades")
 
                 messages_accepted += 1
 

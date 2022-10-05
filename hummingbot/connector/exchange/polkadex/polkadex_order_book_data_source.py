@@ -54,7 +54,6 @@ class PolkadexOrderbookDataSource(OrderBookTrackerDataSource):
                }
         """
         diff_message = PolkadexOrderbook.diff_message_from_exchange(raw_message)
-        logging.info("Received Diff putting into queue")
         message_queue.put_nowait(diff_message)
 
     async def _order_book_snapshot(self, trading_pair: str) -> OrderBookMessage:
@@ -104,18 +103,14 @@ class PolkadexOrderbookDataSource(OrderBookTrackerDataSource):
         self._message_queue[self._diff_messages_queue_key].put_nowait(new_message)
 
     async def listen_for_subscriptions(self):
-        logging.info("Listening for Subscriptions")
-        print("Listening for Subscriptions")
         transport = AppSyncWebsocketsTransport(url=self._connector.endpoint, auth=self._connector.auth)
         tasks = []
         async with Client(transport=transport, fetch_schema_from_transport=False) as session:
             for trading_pair in self._trading_pairs:
-                logging.info("Created Recent Trades task")
                 tasks.append(
                     asyncio.create_task(
                         websocket_streams_session_provided(trading_pair + "-recent-trades", session,
                                                          self.on_recent_trade_callback, trading_pair)))
-                logging.info("Created Ob Increment task")
                 tasks.append(
                     asyncio.create_task(
                         websocket_streams_session_provided(trading_pair + "-ob-inc", session,
@@ -149,7 +144,6 @@ class PolkadexOrderbookDataSource(OrderBookTrackerDataSource):
         while True:
             try:
                 diff_event = await message_queue.get()
-                print("Calling _parse_order_book_diff_message")
                 await self._parse_order_book_diff_message(raw_message=diff_event, message_queue=output)
 
 
