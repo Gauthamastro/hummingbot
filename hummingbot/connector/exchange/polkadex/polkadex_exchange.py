@@ -80,8 +80,7 @@ class PolkadexExchange(ExchangePyBase):
                                                            KeypairType.SR25519)
             self.user_proxy_address = self.proxy_pair.ss58_address
             self.auth = AppSyncJWTAuthentication(host,self.user_proxy_address)
-        
-        # self.auth = AppSyncApiKeyAuthentication(host=host, api_key=self.api_key)
+
         self.user_main_address = None
         self.nonce = 0  # TODO: We need to fetch the nonce from enclave
         self.event_id = 0  # Tracks the event_id from websocket messages
@@ -224,21 +223,19 @@ class PolkadexExchange(ExchangePyBase):
         return "polkadex"
 
     async def _update_trading_rules(self):
-        # sprint("updating trading rules")
         trading_rules_list = await self._format_trading_rules({})
-        # print("Got trading rules list: ",trading_rules_list)
         self._trading_rules.clear()
         for trading_rule in trading_rules_list:
             self._trading_rules[trading_rule.trading_pair] = trading_rule
         await self._initialize_trading_pair_symbol_map()
 
     async def _update_time_synchronizer(self):
-        # print("Bypassing setting time from server, fix this later")
         pass
 
     async def check_network(self) -> NetworkStatus:
         return NetworkStatus.CONNECTED
 
+    # TODO Define these Exceptions
     async def _place_cancel(self, order_id: str, tracked_order: InFlightOrder):
         # TODO; Convert client_order_id to enclave_order_id
         if tracked_order.exchange_order_id is not None:
@@ -270,7 +267,6 @@ class PolkadexExchange(ExchangePyBase):
                 raise Exception("Main account not found")
 
             ts = int(time.time())
-
             try:
                 # converting to type GQL can understand
                 encoded_order, order = create_order(self.blockchain, price, amount, order_type, order_id,
@@ -280,13 +276,11 @@ class PolkadexExchange(ExchangePyBase):
                                                     int(time.time()))
             except Exception as e:
                 raise Exception("Unable to create encoded order")
-
             try:
                 signature = self.proxy_pair.sign(encoded_order)
                 params = [order, {"Sr25519": signature.hex()}]
             except Exception as e:
                 raise Exception("Unable to create signature")
-
             try:
                 result = await place_order(params, self.host, self.user_proxy_address)
                 if result is not None:
@@ -296,7 +290,6 @@ class PolkadexExchange(ExchangePyBase):
             except TransportQueryError:
                 self.logger().error("TransportQuery Error for id: ",order_id);
                 raise Exception("Transport Query Error")
-
         except Exception as e:
             print("Inside Main Exception : ",e)
 
@@ -360,7 +353,6 @@ class PolkadexExchange(ExchangePyBase):
                 exchange_order_id=str(message["id"]),
             )
             self._order_tracker.process_order_update(order_update=order_update)
-
             fee = TradeFeeBase.new_spot_fee(
                 fee_schema=self.trade_fee_schema(),
                 trade_type=tracked_order.trade_type,
@@ -515,7 +507,6 @@ class PolkadexExchange(ExchangePyBase):
                     try:
                         tracked_order.exchange_order_id = await tracked_order.get_exchange_order_id()
                     except asyncio.TimeoutError:
-                        # print("Timeout For Order (10 seconds)")
                         self.logger().debug(
                             f"Tracked order {tracked_order.client_order_id} does not have an exchange id. "
                             f"Attempting fetch in next polling interval."

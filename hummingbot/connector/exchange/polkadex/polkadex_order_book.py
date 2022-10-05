@@ -42,14 +42,12 @@ class PolkadexOrderbook(OrderBook):
 
         bids = []
         asks = []
-        # print("Recvd snapshot msgs: ", msgs)
         for price_level in msgs:
             if price_level["s"] == "Bid":
                 bids.append((p_utils.parse_price_or_qty(price_level["p"]), p_utils.parse_price_or_qty(price_level["q"]), int(-1)))
             else:
                 asks.append((p_utils.parse_price_or_qty(price_level["p"]), p_utils.parse_price_or_qty(price_level["q"]), int(-1)))
 
-        # print("(snapshot)bids: ",bids,"\n(snapshot)asks: ",asks)
         return OrderBookMessage(OrderBookMessageType.SNAPSHOT, {
             "trading_pair": metadata["trading_pair"],
             "bids": bids,
