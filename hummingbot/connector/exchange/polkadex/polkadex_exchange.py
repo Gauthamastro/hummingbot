@@ -1,8 +1,7 @@
 import asyncio
+import json
 import re
 import time
-import json
-
 from decimal import Decimal
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
@@ -506,7 +505,7 @@ class PolkadexExchange(ExchangePyBase):
         }
         """
         print(" ---Format Trading Rules ---")
-        markets_data = await get_all_markets(self.host, self.user_proxy_address)
+        markets_data = await get_all_markets(self.host, "RandomString")
         print("Get all markets result in _format_trading_rules: ", markets_data)
         rules = []
         
@@ -649,8 +648,8 @@ class PolkadexExchange(ExchangePyBase):
 
     async def _initialize_trading_pair_symbol_map(self):
         print("initialize_trading_pair")
-        print("user_proxy_address: ",self.user_proxy_address)
-        markets = await get_all_markets(self.host, self.user_proxy_address)
+        # print("user_proxy_address: ",self.user_proxy_address)
+        markets = await get_all_markets(self.host, "Random Token")
         print("Get all markets result: ", markets)
         mapping = bidict()
         for market in markets:
